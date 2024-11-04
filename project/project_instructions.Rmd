@@ -1,7 +1,9 @@
 ---
-title: "Project: Modeling Insurance Claims Frequency and Severity"
+title: 'Project: Modeling Insurance Claims Frequency and Severity'
 author: "LACTU2150 - Statistical Analysis of Insurance Data"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 ---
 
 # Introduction
