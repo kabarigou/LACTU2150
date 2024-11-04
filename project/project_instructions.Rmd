@@ -17,7 +17,7 @@ The goal is to model the frequency and severity of claims using Generalized Line
 
 # Data Description
 
-The dataset contains 163,231 policyholders and the following variables:
+The dataset called `mtpl_be.rda` located in the subfolder **data** contains 163,231 policyholders and the following variables:
 
 
 | Variable     | Description |
