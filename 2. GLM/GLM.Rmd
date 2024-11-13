@@ -7,7 +7,6 @@ vignette: >
 ---
 
 
-# Generalized Linear Models
 
 ```{r}
 # The easiest way to get recipes is to install all of tidymodels:
@@ -479,7 +478,12 @@ res = fit_resamples(m5_wflow,
 ```
 
 ```{r}
-collect_metrics(res)
+# Collect metrics and format the 'mean' and 'std_err' columns for more decimal places
+collect_metrics(res) %>%
+  mutate(
+    mean = sprintf("%.6f", mean),
+    std_err = sprintf("%.6f", std_err)
+  )
 ```
 
 ### Without interactions
@@ -508,10 +512,15 @@ res = fit_resamples(m6_wflow,
                     resamples = folds,
                     metrics = metric_set(poisson_log_loss))
 
-collect_metrics(res)
+# Collect metrics and format the 'mean' and 'std_err' columns for more decimal places
+collect_metrics(res) %>%
+  mutate(
+    mean = sprintf("%.6f", mean),
+    std_err = sprintf("%.6f", std_err)
+  )
 ```
 
-Given that the mean loss obtained by cross-validation is slighter with the interaction terms, We will not keep the interaction for now.
+We will not keep the interactions for now.
 
 We can now try to merge some of the levels that appear to be not significantly different.
 
@@ -539,7 +548,11 @@ m7_wflow <-
 res7 = fit_resamples(m7_wflow,
                     resamples = folds,
                     metrics = metric_set(poisson_log_loss))
-collect_metrics(res7)
+collect_metrics(res7) %>%
+  mutate(
+    mean = sprintf("%.6f", mean),
+    std_err = sprintf("%.6f", std_err)
+  )
 ```
 
 ```{r}
@@ -574,7 +587,11 @@ m8_wflow <-
 res8 = fit_resamples(m8_wflow,
                     resamples = folds,
                     metrics = metric_set(poisson_log_loss))
-collect_metrics(res8)
+collect_metrics(res8) %>%
+  mutate(
+    mean = sprintf("%.6f", mean),
+    std_err = sprintf("%.6f", std_err)
+  )
 ```
 
 ```{r}
@@ -608,7 +625,11 @@ m8_wflow <-
 res8 = fit_resamples(m8_wflow,
                     resamples = folds,
                     metrics = metric_set(poisson_log_loss))
-collect_metrics(res8)
+collect_metrics(res8) %>%
+  mutate(
+    mean = sprintf("%.6f", mean),
+    std_err = sprintf("%.6f", std_err)
+  )
 ```
 
 We can see that with the new regrouping, its cross-validation error increases.
@@ -641,7 +662,11 @@ m9_wflow <-
 res9 = fit_resamples(m9_wflow,
                     resamples = folds,
                     metrics = metric_set(poisson_log_loss))
-collect_metrics(res9)
+collect_metrics(res9) %>%
+  mutate(
+    mean = sprintf("%.6f", mean),
+    std_err = sprintf("%.6f", std_err)
+  )
 ```
 
 ```{r}
@@ -683,7 +708,11 @@ m10_wflow <-
 res10 = fit_resamples(m10_wflow,
                     resamples = folds,
                     metrics = metric_set(poisson_log_loss))
-collect_metrics(res10)
+collect_metrics(res10) %>%
+  mutate(
+    mean = sprintf("%.6f", mean),
+    std_err = sprintf("%.6f", std_err)
+  )
 ```
 
 ## Consider the continuous variables 
@@ -720,7 +749,11 @@ m10_wflow <-
 res10 = fit_resamples(m10_wflow,
                     resamples = folds,
                     metrics = metric_set(poisson_log_loss))
-collect_metrics(res10)
+collect_metrics(res10) %>%
+  mutate(
+    mean = sprintf("%.6f", mean),
+    std_err = sprintf("%.6f", std_err)
+  )
 ```
 
 ```{r}
@@ -763,7 +796,11 @@ m11_wflow <-
 res11 = fit_resamples(m11_wflow,
                     resamples = folds,
                     metrics = metric_set(poisson_log_loss))
-collect_metrics(res11)
+collect_metrics(res11) %>%
+  mutate(
+    mean = sprintf("%.6f", mean),
+    std_err = sprintf("%.6f", std_err)
+  )
 ```
 
 We can change the degree. After several trials and errors, we can find...
@@ -799,7 +836,11 @@ m11_wflow <-
 res11 = fit_resamples(m11_wflow,
                     resamples = folds,
                     metrics = metric_set(poisson_log_loss))
-collect_metrics(res11)
+collect_metrics(res11) %>%
+  mutate(
+    mean = sprintf("%.6f", mean),
+    std_err = sprintf("%.6f", std_err)
+  )
 ```
 
 ```{r}
@@ -842,7 +883,11 @@ m12_wflow <-
 res12 = fit_resamples(m12_wflow,
                     resamples = folds,
                     metrics = metric_set(poisson_log_loss))
-collect_metrics(res12)
+collect_metrics(res12) %>%
+  mutate(
+    mean = sprintf("%.6f", mean),
+    std_err = sprintf("%.6f", std_err)
+  )
 ```
 
 ```{r}

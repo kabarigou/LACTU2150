@@ -12,7 +12,7 @@
 
 
 
-<title>An R Markdown document converted from “5. GLM/GLM.ipynb”</title>
+<title>Generalized Linear Models</title>
 
 <script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
 // be compatible with the behavior of Pandoc < 2.8).
@@ -336,13 +336,10 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 
 
-<h1 class="title toc-ignore">An R Markdown document converted from “5.
-GLM/GLM.ipynb”</h1>
+<h1 class="title toc-ignore">Generalized Linear Models</h1>
 
 
 
-<div id="generalized-linear-models" class="section level1">
-<h1>Generalized Linear Models</h1>
 <div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="co"># The easiest way to get recipes is to install all of tidymodels:</span></span>
 <span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="co"># install.packages(&quot;tidymodels&quot;)</span></span>
 <span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a><span class="fu">options</span>(<span class="at">encoding =</span> <span class="st">&#39;UTF-8&#39;</span>)</span>
@@ -717,15 +714,18 @@ to plot the coefficients, along with their confidence interval. We can
 specify the <strong>type</strong> of plot we want:</p>
 <p>From the documentation of <em>visreg</em>, we can read the
 following</p>
-<p>The type of plot to be produced. The following options are supported:
-- If <strong>conditional</strong> is selected, the plot returned shows
+<p>The type of plot to be produced. The following options are
+supported:</p>
+<ul>
+<li>If <strong>conditional</strong> is selected, the plot returned shows
 the value of the variable on the x-axis and the change in response on
 the y-axis, holding all other variables constant (by default, median for
-numeric variables and most common category for factors). - If
-<strong>contrast</strong> is selected, the plot returned shows the
-effect on the expected value of the response by moving the x variable
-away from a reference point on the x-axis (for numeric variables, this
-is taken to be the mean).</p>
+numeric variables and most common category for factors).</li>
+<li>If <strong>contrast</strong> is selected, the plot returned shows
+the effect on the expected value of the response by moving the x
+variable away from a reference point on the x-axis (for numeric
+variables, this is taken to be the mean).</li>
+</ul>
 <p>If we want to have the coefficients on the claim frequency scale, we
 can specify <em>scale = “response”</em>. Otherwise we can specify
 <em>scale = “linear”</em> to see the <span class="math inline">\(\displaystyle\beta\)</span>s</p>
@@ -913,14 +913,18 @@ some call a “Poisson rate model”)</p>
 ## RegionBasse-Normandie                    0.11349562  0.11349562
 ## RegionHaute-Normandie                    0.13235510  0.13235507
 ## RegionLimousin                           0.41227457  0.41227457</code></pre>
-<p>Why does that work ? See whiteboard or : <a href="https://stats.stackexchange.com/a/270151" class="uri">https://stats.stackexchange.com/a/270151</a></p>
+<p>Why does that work ? See course notes or : <a href="https://stats.stackexchange.com/a/270151" class="uri">https://stats.stackexchange.com/a/270151</a></p>
 </div>
 <div id="remarks" class="section level3">
 <h3>Remarks</h3>
-<p>Up to now, we have 1. Load the original dataset. 2. We have prepared
-the data in some way (relevel the factors we instance). We could have
-binned the continuous variables. 3. Run a model on these variables. 4.
-Predict for some new observations (-&gt; testing set ?).</p>
+<p>Up to now, we have</p>
+<ol style="list-style-type: decimal">
+<li>Load the original dataset.</li>
+<li>We have prepared the data in some way (relevel the factors we
+instance). We could have binned the continuous variables.</li>
+<li>Run a model on these variables.</li>
+<li>Predict for some new observations (-&gt; testing set ?).</li>
+</ol>
 <p>There are some flaws in the way of working.</p>
 <ul>
 <li><p>We should not prepare the data <em>before</em> splitting into
@@ -1299,9 +1303,8 @@ what variables are factors ?</p>
 <div id="build-model-with-all-features" class="section level2">
 <h2>Build Model with all features</h2>
 <p>Now that we have understood how to build GLM models with workflows
-and recipes, we can use all the variables from the dataset. We will use
-our (future) learnings from the session on GBM to include some
-interaction terms.</p>
+and recipes, we can use all the variables from the dataset. We will also
+include some interaction terms.</p>
 <div class="sourceCode" id="cb141"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb141-1"><a href="#cb141-1" tabindex="-1"></a>rec_5 <span class="ot">&lt;-</span> <span class="fu">recipe</span>(ClaimNb <span class="sc">~</span> Power <span class="sc">+</span> Gas <span class="sc">+</span> Region <span class="sc">+</span> Brand <span class="sc">+</span> Exposure, <span class="at">data =</span> training_set) <span class="sc">%&gt;%</span> <span class="co"># Which columns do we need ?</span></span>
 <span id="cb141-2"><a href="#cb141-2" tabindex="-1"></a>    <span class="fu">step_relevel</span>(Power, <span class="at">ref_level =</span> <span class="st">&quot;d&quot;</span>) <span class="sc">%&gt;%</span></span>
 <span id="cb141-3"><a href="#cb141-3" tabindex="-1"></a>    <span class="fu">step_relevel</span>(Gas, <span class="at">ref_level =</span> <span class="st">&quot;Regular&quot;</span>) <span class="sc">%&gt;%</span></span>
@@ -1446,11 +1449,16 @@ and how to bin the variables.</p>
 <div class="sourceCode" id="cb145"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb145-1"><a href="#cb145-1" tabindex="-1"></a>res <span class="ot">=</span> <span class="fu">fit_resamples</span>(m5_wflow,</span>
 <span id="cb145-2"><a href="#cb145-2" tabindex="-1"></a>                    <span class="at">resamples =</span> folds,</span>
 <span id="cb145-3"><a href="#cb145-3" tabindex="-1"></a>                    <span class="at">metrics =</span> <span class="fu">metric_set</span>(poisson_log_loss))</span></code></pre></div>
-<div class="sourceCode" id="cb146"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb146-1"><a href="#cb146-1" tabindex="-1"></a><span class="fu">collect_metrics</span>(res)</span></code></pre></div>
+<div class="sourceCode" id="cb146"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb146-1"><a href="#cb146-1" tabindex="-1"></a><span class="co"># Collect metrics and format the &#39;mean&#39; and &#39;std_err&#39; columns for more decimal places</span></span>
+<span id="cb146-2"><a href="#cb146-2" tabindex="-1"></a><span class="fu">collect_metrics</span>(res) <span class="sc">%&gt;%</span></span>
+<span id="cb146-3"><a href="#cb146-3" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb146-4"><a href="#cb146-4" tabindex="-1"></a>    <span class="at">mean =</span> <span class="fu">sprintf</span>(<span class="st">&quot;%.6f&quot;</span>, mean),</span>
+<span id="cb146-5"><a href="#cb146-5" tabindex="-1"></a>    <span class="at">std_err =</span> <span class="fu">sprintf</span>(<span class="st">&quot;%.6f&quot;</span>, std_err)</span>
+<span id="cb146-6"><a href="#cb146-6" tabindex="-1"></a>  )</span></code></pre></div>
 <pre><code>## # A tibble: 1 × 6
-##   .metric          .estimator  mean     n std_err .config             
-##   &lt;chr&gt;            &lt;chr&gt;      &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt; &lt;chr&gt;               
-## 1 poisson_log_loss standard   0.166     5 0.00118 Preprocessor1_Model1</code></pre>
+##   .metric          .estimator mean         n std_err  .config             
+##   &lt;chr&gt;            &lt;chr&gt;      &lt;chr&gt;    &lt;int&gt; &lt;chr&gt;    &lt;chr&gt;               
+## 1 poisson_log_loss standard   0.165817     5 0.001183 Preprocessor1_Model1</code></pre>
 </div>
 <div id="without-interactions" class="section level3">
 <h3>Without interactions</h3>
@@ -1473,13 +1481,18 @@ and how to bin the variables.</p>
 <span id="cb149-2"><a href="#cb149-2" tabindex="-1"></a>                    <span class="at">resamples =</span> folds,</span>
 <span id="cb149-3"><a href="#cb149-3" tabindex="-1"></a>                    <span class="at">metrics =</span> <span class="fu">metric_set</span>(poisson_log_loss))</span>
 <span id="cb149-4"><a href="#cb149-4" tabindex="-1"></a></span>
-<span id="cb149-5"><a href="#cb149-5" tabindex="-1"></a><span class="fu">collect_metrics</span>(res)</span></code></pre></div>
+<span id="cb149-5"><a href="#cb149-5" tabindex="-1"></a><span class="co"># Collect metrics and format the &#39;mean&#39; and &#39;std_err&#39; columns for more decimal places</span></span>
+<span id="cb149-6"><a href="#cb149-6" tabindex="-1"></a><span class="fu">collect_metrics</span>(res) <span class="sc">%&gt;%</span></span>
+<span id="cb149-7"><a href="#cb149-7" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb149-8"><a href="#cb149-8" tabindex="-1"></a>    <span class="at">mean =</span> <span class="fu">sprintf</span>(<span class="st">&quot;%.6f&quot;</span>, mean),</span>
+<span id="cb149-9"><a href="#cb149-9" tabindex="-1"></a>    <span class="at">std_err =</span> <span class="fu">sprintf</span>(<span class="st">&quot;%.6f&quot;</span>, std_err)</span>
+<span id="cb149-10"><a href="#cb149-10" tabindex="-1"></a>  )</span></code></pre></div>
 <pre><code>## # A tibble: 1 × 6
-##   .metric          .estimator  mean     n std_err .config             
-##   &lt;chr&gt;            &lt;chr&gt;      &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt; &lt;chr&gt;               
-## 1 poisson_log_loss standard   0.166     5 0.00120 Preprocessor1_Model1</code></pre>
-<p>We will not keep the interaction for now..</p>
-<p>We can try to merge some of the levels that appear to be not
+##   .metric          .estimator mean         n std_err  .config             
+##   &lt;chr&gt;            &lt;chr&gt;      &lt;chr&gt;    &lt;int&gt; &lt;chr&gt;    &lt;chr&gt;               
+## 1 poisson_log_loss standard   0.165793     5 0.001202 Preprocessor1_Model1</code></pre>
+<p>We will not keep the interactions for now.</p>
+<p>We can now try to merge some of the levels that appear to be not
 significantly different.</p>
 </div>
 <div id="group-some-brands" class="section level3">
@@ -1505,11 +1518,15 @@ significantly different.</p>
 <span id="cb151-19"><a href="#cb151-19" tabindex="-1"></a>res7 <span class="ot">=</span> <span class="fu">fit_resamples</span>(m7_wflow,</span>
 <span id="cb151-20"><a href="#cb151-20" tabindex="-1"></a>                    <span class="at">resamples =</span> folds,</span>
 <span id="cb151-21"><a href="#cb151-21" tabindex="-1"></a>                    <span class="at">metrics =</span> <span class="fu">metric_set</span>(poisson_log_loss))</span>
-<span id="cb151-22"><a href="#cb151-22" tabindex="-1"></a><span class="fu">collect_metrics</span>(res7)</span></code></pre></div>
+<span id="cb151-22"><a href="#cb151-22" tabindex="-1"></a><span class="fu">collect_metrics</span>(res7) <span class="sc">%&gt;%</span></span>
+<span id="cb151-23"><a href="#cb151-23" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb151-24"><a href="#cb151-24" tabindex="-1"></a>    <span class="at">mean =</span> <span class="fu">sprintf</span>(<span class="st">&quot;%.6f&quot;</span>, mean),</span>
+<span id="cb151-25"><a href="#cb151-25" tabindex="-1"></a>    <span class="at">std_err =</span> <span class="fu">sprintf</span>(<span class="st">&quot;%.6f&quot;</span>, std_err)</span>
+<span id="cb151-26"><a href="#cb151-26" tabindex="-1"></a>  )</span></code></pre></div>
 <pre><code>## # A tibble: 1 × 6
-##   .metric          .estimator  mean     n std_err .config             
-##   &lt;chr&gt;            &lt;chr&gt;      &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt; &lt;chr&gt;               
-## 1 poisson_log_loss standard   0.166     5 0.00120 Preprocessor1_Model1</code></pre>
+##   .metric          .estimator mean         n std_err  .config             
+##   &lt;chr&gt;            &lt;chr&gt;      &lt;chr&gt;    &lt;int&gt; &lt;chr&gt;    &lt;chr&gt;               
+## 1 poisson_log_loss standard   0.165781     5 0.001197 Preprocessor1_Model1</code></pre>
 <div class="sourceCode" id="cb153"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb153-1"><a href="#cb153-1" tabindex="-1"></a>m7_fit <span class="ot">=</span> m7_wflow <span class="sc">%&gt;%</span> </span>
 <span id="cb153-2"><a href="#cb153-2" tabindex="-1"></a>    <span class="fu">fit</span>(training_set)</span>
 <span id="cb153-3"><a href="#cb153-3" tabindex="-1"></a><span class="fu">summary</span>(<span class="fu">extract_fit_engine</span>(m7_fit))</span></code></pre></div>
@@ -1604,11 +1621,15 @@ significantly different.</p>
 <span id="cb155-19"><a href="#cb155-19" tabindex="-1"></a>res8 <span class="ot">=</span> <span class="fu">fit_resamples</span>(m8_wflow,</span>
 <span id="cb155-20"><a href="#cb155-20" tabindex="-1"></a>                    <span class="at">resamples =</span> folds,</span>
 <span id="cb155-21"><a href="#cb155-21" tabindex="-1"></a>                    <span class="at">metrics =</span> <span class="fu">metric_set</span>(poisson_log_loss))</span>
-<span id="cb155-22"><a href="#cb155-22" tabindex="-1"></a><span class="fu">collect_metrics</span>(res8)</span></code></pre></div>
+<span id="cb155-22"><a href="#cb155-22" tabindex="-1"></a><span class="fu">collect_metrics</span>(res8) <span class="sc">%&gt;%</span></span>
+<span id="cb155-23"><a href="#cb155-23" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb155-24"><a href="#cb155-24" tabindex="-1"></a>    <span class="at">mean =</span> <span class="fu">sprintf</span>(<span class="st">&quot;%.6f&quot;</span>, mean),</span>
+<span id="cb155-25"><a href="#cb155-25" tabindex="-1"></a>    <span class="at">std_err =</span> <span class="fu">sprintf</span>(<span class="st">&quot;%.6f&quot;</span>, std_err)</span>
+<span id="cb155-26"><a href="#cb155-26" tabindex="-1"></a>  )</span></code></pre></div>
 <pre><code>## # A tibble: 1 × 6
-##   .metric          .estimator  mean     n std_err .config             
-##   &lt;chr&gt;            &lt;chr&gt;      &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt; &lt;chr&gt;               
-## 1 poisson_log_loss standard   0.166     5 0.00119 Preprocessor1_Model1</code></pre>
+##   .metric          .estimator mean         n std_err  .config             
+##   &lt;chr&gt;            &lt;chr&gt;      &lt;chr&gt;    &lt;int&gt; &lt;chr&gt;    &lt;chr&gt;               
+## 1 poisson_log_loss standard   0.165777     5 0.001192 Preprocessor1_Model1</code></pre>
 <div class="sourceCode" id="cb157"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb157-1"><a href="#cb157-1" tabindex="-1"></a>m8_fit <span class="ot">=</span> m8_wflow <span class="sc">%&gt;%</span> </span>
 <span id="cb157-2"><a href="#cb157-2" tabindex="-1"></a>    <span class="fu">fit</span>(training_set)</span>
 <span id="cb157-3"><a href="#cb157-3" tabindex="-1"></a><span class="fu">summary</span>(<span class="fu">extract_fit_engine</span>(m8_fit))</span></code></pre></div>
@@ -1695,13 +1716,17 @@ significantly different.</p>
 <span id="cb159-20"><a href="#cb159-20" tabindex="-1"></a>res8 <span class="ot">=</span> <span class="fu">fit_resamples</span>(m8_wflow,</span>
 <span id="cb159-21"><a href="#cb159-21" tabindex="-1"></a>                    <span class="at">resamples =</span> folds,</span>
 <span id="cb159-22"><a href="#cb159-22" tabindex="-1"></a>                    <span class="at">metrics =</span> <span class="fu">metric_set</span>(poisson_log_loss))</span>
-<span id="cb159-23"><a href="#cb159-23" tabindex="-1"></a><span class="fu">collect_metrics</span>(res8)</span></code></pre></div>
+<span id="cb159-23"><a href="#cb159-23" tabindex="-1"></a><span class="fu">collect_metrics</span>(res8) <span class="sc">%&gt;%</span></span>
+<span id="cb159-24"><a href="#cb159-24" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb159-25"><a href="#cb159-25" tabindex="-1"></a>    <span class="at">mean =</span> <span class="fu">sprintf</span>(<span class="st">&quot;%.6f&quot;</span>, mean),</span>
+<span id="cb159-26"><a href="#cb159-26" tabindex="-1"></a>    <span class="at">std_err =</span> <span class="fu">sprintf</span>(<span class="st">&quot;%.6f&quot;</span>, std_err)</span>
+<span id="cb159-27"><a href="#cb159-27" tabindex="-1"></a>  )</span></code></pre></div>
 <pre><code>## # A tibble: 1 × 6
-##   .metric          .estimator  mean     n std_err .config             
-##   &lt;chr&gt;            &lt;chr&gt;      &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt; &lt;chr&gt;               
-## 1 poisson_log_loss standard   0.166     5 0.00119 Preprocessor1_Model1</code></pre>
-<p>But it cross-validation error increases. Finally, let us regroup the
-some other levels</p>
+##   .metric          .estimator mean         n std_err  .config             
+##   &lt;chr&gt;            &lt;chr&gt;      &lt;chr&gt;    &lt;int&gt; &lt;chr&gt;    &lt;chr&gt;               
+## 1 poisson_log_loss standard   0.165787     5 0.001188 Preprocessor1_Model1</code></pre>
+<p>We can see that with the new regrouping, its cross-validation error
+increases. Finally, let us regroup the some other levels</p>
 <div class="sourceCode" id="cb161"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb161-1"><a href="#cb161-1" tabindex="-1"></a>rec_9 <span class="ot">&lt;-</span> <span class="fu">recipe</span>(ClaimNb <span class="sc">~</span> Power <span class="sc">+</span> Gas <span class="sc">+</span> Region <span class="sc">+</span> Brand <span class="sc">+</span> Exposure, <span class="at">data =</span> training_set) <span class="sc">%&gt;%</span> <span class="co"># Which columns do we need ?</span></span>
 <span id="cb161-2"><a href="#cb161-2" tabindex="-1"></a>    <span class="fu">step_relevel</span>(Power, <span class="at">ref_level =</span> <span class="st">&quot;d&quot;</span>) <span class="sc">%&gt;%</span></span>
 <span id="cb161-3"><a href="#cb161-3" tabindex="-1"></a>    <span class="fu">step_relevel</span>(Gas, <span class="at">ref_level =</span> <span class="st">&quot;Regular&quot;</span>) <span class="sc">%&gt;%</span></span>
@@ -1728,11 +1753,15 @@ some other levels</p>
 <span id="cb161-24"><a href="#cb161-24" tabindex="-1"></a>res9 <span class="ot">=</span> <span class="fu">fit_resamples</span>(m9_wflow,</span>
 <span id="cb161-25"><a href="#cb161-25" tabindex="-1"></a>                    <span class="at">resamples =</span> folds,</span>
 <span id="cb161-26"><a href="#cb161-26" tabindex="-1"></a>                    <span class="at">metrics =</span> <span class="fu">metric_set</span>(poisson_log_loss))</span>
-<span id="cb161-27"><a href="#cb161-27" tabindex="-1"></a><span class="fu">collect_metrics</span>(res9)</span></code></pre></div>
+<span id="cb161-27"><a href="#cb161-27" tabindex="-1"></a><span class="fu">collect_metrics</span>(res9) <span class="sc">%&gt;%</span></span>
+<span id="cb161-28"><a href="#cb161-28" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb161-29"><a href="#cb161-29" tabindex="-1"></a>    <span class="at">mean =</span> <span class="fu">sprintf</span>(<span class="st">&quot;%.6f&quot;</span>, mean),</span>
+<span id="cb161-30"><a href="#cb161-30" tabindex="-1"></a>    <span class="at">std_err =</span> <span class="fu">sprintf</span>(<span class="st">&quot;%.6f&quot;</span>, std_err)</span>
+<span id="cb161-31"><a href="#cb161-31" tabindex="-1"></a>  )</span></code></pre></div>
 <pre><code>## # A tibble: 1 × 6
-##   .metric          .estimator  mean     n std_err .config             
-##   &lt;chr&gt;            &lt;chr&gt;      &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt; &lt;chr&gt;               
-## 1 poisson_log_loss standard   0.166     5 0.00120 Preprocessor1_Model1</code></pre>
+##   .metric          .estimator mean         n std_err  .config             
+##   &lt;chr&gt;            &lt;chr&gt;      &lt;chr&gt;    &lt;int&gt; &lt;chr&gt;    &lt;chr&gt;               
+## 1 poisson_log_loss standard   0.165762     5 0.001198 Preprocessor1_Model1</code></pre>
 <div class="sourceCode" id="cb163"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb163-1"><a href="#cb163-1" tabindex="-1"></a>m9_fit <span class="ot">=</span> m9_wflow <span class="sc">%&gt;%</span> </span>
 <span id="cb163-2"><a href="#cb163-2" tabindex="-1"></a>    <span class="fu">fit</span>(training_set)</span>
 <span id="cb163-3"><a href="#cb163-3" tabindex="-1"></a><span class="fu">summary</span>(<span class="fu">extract_fit_engine</span>(m9_fit))</span></code></pre></div>
@@ -1786,6 +1815,8 @@ some other levels</p>
 ## AIC: 108964
 ## 
 ## Number of Fisher Scoring iterations: 6</code></pre>
+<p>Let us now regroup some regions, e.g. Pays de la loire et
+Poitou-Charentes for which coefficients are not so different.</p>
 <div class="sourceCode" id="cb165"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb165-1"><a href="#cb165-1" tabindex="-1"></a>rec <span class="ot">&lt;-</span> <span class="fu">recipe</span>(ClaimNb <span class="sc">~</span> Power <span class="sc">+</span> Gas <span class="sc">+</span> Region <span class="sc">+</span> Brand <span class="sc">+</span> Exposure, <span class="at">data =</span> training_set) <span class="sc">%&gt;%</span> <span class="co"># Which columns do we need ?</span></span>
 <span id="cb165-2"><a href="#cb165-2" tabindex="-1"></a>    <span class="fu">step_relevel</span>(Power, <span class="at">ref_level =</span> <span class="st">&quot;d&quot;</span>) <span class="sc">%&gt;%</span></span>
 <span id="cb165-3"><a href="#cb165-3" tabindex="-1"></a>    <span class="fu">step_relevel</span>(Gas, <span class="at">ref_level =</span> <span class="st">&quot;Regular&quot;</span>) <span class="sc">%&gt;%</span></span>
@@ -1815,11 +1846,15 @@ some other levels</p>
 <span id="cb165-27"><a href="#cb165-27" tabindex="-1"></a>res10 <span class="ot">=</span> <span class="fu">fit_resamples</span>(m10_wflow,</span>
 <span id="cb165-28"><a href="#cb165-28" tabindex="-1"></a>                    <span class="at">resamples =</span> folds,</span>
 <span id="cb165-29"><a href="#cb165-29" tabindex="-1"></a>                    <span class="at">metrics =</span> <span class="fu">metric_set</span>(poisson_log_loss))</span>
-<span id="cb165-30"><a href="#cb165-30" tabindex="-1"></a><span class="fu">collect_metrics</span>(res10)</span></code></pre></div>
+<span id="cb165-30"><a href="#cb165-30" tabindex="-1"></a><span class="fu">collect_metrics</span>(res10) <span class="sc">%&gt;%</span></span>
+<span id="cb165-31"><a href="#cb165-31" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb165-32"><a href="#cb165-32" tabindex="-1"></a>    <span class="at">mean =</span> <span class="fu">sprintf</span>(<span class="st">&quot;%.6f&quot;</span>, mean),</span>
+<span id="cb165-33"><a href="#cb165-33" tabindex="-1"></a>    <span class="at">std_err =</span> <span class="fu">sprintf</span>(<span class="st">&quot;%.6f&quot;</span>, std_err)</span>
+<span id="cb165-34"><a href="#cb165-34" tabindex="-1"></a>  )</span></code></pre></div>
 <pre><code>## # A tibble: 1 × 6
-##   .metric          .estimator  mean     n std_err .config             
-##   &lt;chr&gt;            &lt;chr&gt;      &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt; &lt;chr&gt;               
-## 1 poisson_log_loss standard   0.166     5 0.00120 Preprocessor1_Model1</code></pre>
+##   .metric          .estimator mean         n std_err  .config             
+##   &lt;chr&gt;            &lt;chr&gt;      &lt;chr&gt;    &lt;int&gt; &lt;chr&gt;    &lt;chr&gt;               
+## 1 poisson_log_loss standard   0.165759     5 0.001198 Preprocessor1_Model1</code></pre>
 </div>
 </div>
 <div id="consider-the-continuous-variables" class="section level2">
@@ -1854,11 +1889,15 @@ some other levels</p>
 <span id="cb167-27"><a href="#cb167-27" tabindex="-1"></a>res10 <span class="ot">=</span> <span class="fu">fit_resamples</span>(m10_wflow,</span>
 <span id="cb167-28"><a href="#cb167-28" tabindex="-1"></a>                    <span class="at">resamples =</span> folds,</span>
 <span id="cb167-29"><a href="#cb167-29" tabindex="-1"></a>                    <span class="at">metrics =</span> <span class="fu">metric_set</span>(poisson_log_loss))</span>
-<span id="cb167-30"><a href="#cb167-30" tabindex="-1"></a><span class="fu">collect_metrics</span>(res10)</span></code></pre></div>
+<span id="cb167-30"><a href="#cb167-30" tabindex="-1"></a><span class="fu">collect_metrics</span>(res10) <span class="sc">%&gt;%</span></span>
+<span id="cb167-31"><a href="#cb167-31" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb167-32"><a href="#cb167-32" tabindex="-1"></a>    <span class="at">mean =</span> <span class="fu">sprintf</span>(<span class="st">&quot;%.6f&quot;</span>, mean),</span>
+<span id="cb167-33"><a href="#cb167-33" tabindex="-1"></a>    <span class="at">std_err =</span> <span class="fu">sprintf</span>(<span class="st">&quot;%.6f&quot;</span>, std_err)</span>
+<span id="cb167-34"><a href="#cb167-34" tabindex="-1"></a>  )</span></code></pre></div>
 <pre><code>## # A tibble: 1 × 6
-##   .metric          .estimator  mean     n std_err .config             
-##   &lt;chr&gt;            &lt;chr&gt;      &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt; &lt;chr&gt;               
-## 1 poisson_log_loss standard   0.165     5 0.00118 Preprocessor1_Model1</code></pre>
+##   .metric          .estimator mean         n std_err  .config             
+##   &lt;chr&gt;            &lt;chr&gt;      &lt;chr&gt;    &lt;int&gt; &lt;chr&gt;    &lt;chr&gt;               
+## 1 poisson_log_loss standard   0.165338     5 0.001180 Preprocessor1_Model1</code></pre>
 <div class="sourceCode" id="cb169"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb169-1"><a href="#cb169-1" tabindex="-1"></a>m10_fit <span class="ot">=</span> m10_wflow <span class="sc">%&gt;%</span> </span>
 <span id="cb169-2"><a href="#cb169-2" tabindex="-1"></a>    <span class="fu">fit</span>(training_set)</span>
 <span id="cb169-3"><a href="#cb169-3" tabindex="-1"></a><span class="fu">summary</span>(<span class="fu">extract_fit_engine</span>(m10_fit))</span></code></pre></div>
@@ -1914,7 +1953,7 @@ some other levels</p>
 ## Number of Fisher Scoring iterations: 6</code></pre>
 <p>One possibility is to add polynomial terms. We then need to find the
 optimal degree of the polynomial. For example, let us consider a
-polynomial for DriverAge and a polynomial for CarAge</p>
+polynomial of degree 2 for DriverAge and a polynomial for CarAge.</p>
 <div class="sourceCode" id="cb171"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb171-1"><a href="#cb171-1" tabindex="-1"></a>rec <span class="ot">&lt;-</span> <span class="fu">recipe</span>(ClaimNb <span class="sc">~</span> DriverAge <span class="sc">+</span> CarAge <span class="sc">+</span> Power <span class="sc">+</span> Gas <span class="sc">+</span> Region <span class="sc">+</span> Brand <span class="sc">+</span> Exposure, <span class="at">data =</span> training_set) <span class="sc">%&gt;%</span> <span class="co"># Which columns do we need ?</span></span>
 <span id="cb171-2"><a href="#cb171-2" tabindex="-1"></a>    <span class="fu">step_relevel</span>(Power, <span class="at">ref_level =</span> <span class="st">&quot;d&quot;</span>) <span class="sc">%&gt;%</span></span>
 <span id="cb171-3"><a href="#cb171-3" tabindex="-1"></a>    <span class="fu">step_relevel</span>(Gas, <span class="at">ref_level =</span> <span class="st">&quot;Regular&quot;</span>) <span class="sc">%&gt;%</span></span>
@@ -1946,12 +1985,16 @@ polynomial for DriverAge and a polynomial for CarAge</p>
 <span id="cb171-29"><a href="#cb171-29" tabindex="-1"></a>res11 <span class="ot">=</span> <span class="fu">fit_resamples</span>(m11_wflow,</span>
 <span id="cb171-30"><a href="#cb171-30" tabindex="-1"></a>                    <span class="at">resamples =</span> folds,</span>
 <span id="cb171-31"><a href="#cb171-31" tabindex="-1"></a>                    <span class="at">metrics =</span> <span class="fu">metric_set</span>(poisson_log_loss))</span>
-<span id="cb171-32"><a href="#cb171-32" tabindex="-1"></a><span class="fu">collect_metrics</span>(res11)</span></code></pre></div>
+<span id="cb171-32"><a href="#cb171-32" tabindex="-1"></a><span class="fu">collect_metrics</span>(res11) <span class="sc">%&gt;%</span></span>
+<span id="cb171-33"><a href="#cb171-33" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb171-34"><a href="#cb171-34" tabindex="-1"></a>    <span class="at">mean =</span> <span class="fu">sprintf</span>(<span class="st">&quot;%.6f&quot;</span>, mean),</span>
+<span id="cb171-35"><a href="#cb171-35" tabindex="-1"></a>    <span class="at">std_err =</span> <span class="fu">sprintf</span>(<span class="st">&quot;%.6f&quot;</span>, std_err)</span>
+<span id="cb171-36"><a href="#cb171-36" tabindex="-1"></a>  )</span></code></pre></div>
 <pre><code>## # A tibble: 1 × 6
-##   .metric          .estimator  mean     n std_err .config             
-##   &lt;chr&gt;            &lt;chr&gt;      &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt; &lt;chr&gt;               
-## 1 poisson_log_loss standard   0.165     5 0.00115 Preprocessor1_Model1</code></pre>
-<p>We can change the degree. After several trial and error we can
+##   .metric          .estimator mean         n std_err  .config             
+##   &lt;chr&gt;            &lt;chr&gt;      &lt;chr&gt;    &lt;int&gt; &lt;chr&gt;    &lt;chr&gt;               
+## 1 poisson_log_loss standard   0.165069     5 0.001154 Preprocessor1_Model1</code></pre>
+<p>We can change the degree. After several trials and errors, we can
 find…</p>
 <div class="sourceCode" id="cb173"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb173-1"><a href="#cb173-1" tabindex="-1"></a>rec <span class="ot">&lt;-</span> <span class="fu">recipe</span>(ClaimNb <span class="sc">~</span> DriverAge <span class="sc">+</span> CarAge <span class="sc">+</span> Power <span class="sc">+</span> Gas <span class="sc">+</span> Region <span class="sc">+</span> Brand <span class="sc">+</span> Exposure, <span class="at">data =</span> training_set) <span class="sc">%&gt;%</span> <span class="co"># Which columns do we need ?</span></span>
 <span id="cb173-2"><a href="#cb173-2" tabindex="-1"></a>    <span class="fu">step_relevel</span>(Power, <span class="at">ref_level =</span> <span class="st">&quot;d&quot;</span>) <span class="sc">%&gt;%</span></span>
@@ -1983,11 +2026,15 @@ find…</p>
 <span id="cb173-28"><a href="#cb173-28" tabindex="-1"></a>res11 <span class="ot">=</span> <span class="fu">fit_resamples</span>(m11_wflow,</span>
 <span id="cb173-29"><a href="#cb173-29" tabindex="-1"></a>                    <span class="at">resamples =</span> folds,</span>
 <span id="cb173-30"><a href="#cb173-30" tabindex="-1"></a>                    <span class="at">metrics =</span> <span class="fu">metric_set</span>(poisson_log_loss))</span>
-<span id="cb173-31"><a href="#cb173-31" tabindex="-1"></a><span class="fu">collect_metrics</span>(res11)</span></code></pre></div>
+<span id="cb173-31"><a href="#cb173-31" tabindex="-1"></a><span class="fu">collect_metrics</span>(res11) <span class="sc">%&gt;%</span></span>
+<span id="cb173-32"><a href="#cb173-32" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb173-33"><a href="#cb173-33" tabindex="-1"></a>    <span class="at">mean =</span> <span class="fu">sprintf</span>(<span class="st">&quot;%.6f&quot;</span>, mean),</span>
+<span id="cb173-34"><a href="#cb173-34" tabindex="-1"></a>    <span class="at">std_err =</span> <span class="fu">sprintf</span>(<span class="st">&quot;%.6f&quot;</span>, std_err)</span>
+<span id="cb173-35"><a href="#cb173-35" tabindex="-1"></a>  )</span></code></pre></div>
 <pre><code>## # A tibble: 1 × 6
-##   .metric          .estimator  mean     n std_err .config             
-##   &lt;chr&gt;            &lt;chr&gt;      &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt; &lt;chr&gt;               
-## 1 poisson_log_loss standard   0.164     5 0.00117 Preprocessor1_Model1</code></pre>
+##   .metric          .estimator mean         n std_err  .config             
+##   &lt;chr&gt;            &lt;chr&gt;      &lt;chr&gt;    &lt;int&gt; &lt;chr&gt;    &lt;chr&gt;               
+## 1 poisson_log_loss standard   0.164456     5 0.001170 Preprocessor1_Model1</code></pre>
 <div class="sourceCode" id="cb175"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb175-1"><a href="#cb175-1" tabindex="-1"></a>m11_fit <span class="ot">=</span> m11_wflow <span class="sc">%&gt;%</span> </span>
 <span id="cb175-2"><a href="#cb175-2" tabindex="-1"></a>    <span class="fu">fit</span>(training_set)</span>
 <span id="cb175-3"><a href="#cb175-3" tabindex="-1"></a><span class="fu">summary</span>(<span class="fu">extract_fit_engine</span>(m11_fit))</span></code></pre></div>
@@ -2088,11 +2135,15 @@ here on DriverAge.</p>
 <span id="cb177-29"><a href="#cb177-29" tabindex="-1"></a>res12 <span class="ot">=</span> <span class="fu">fit_resamples</span>(m12_wflow,</span>
 <span id="cb177-30"><a href="#cb177-30" tabindex="-1"></a>                    <span class="at">resamples =</span> folds,</span>
 <span id="cb177-31"><a href="#cb177-31" tabindex="-1"></a>                    <span class="at">metrics =</span> <span class="fu">metric_set</span>(poisson_log_loss))</span>
-<span id="cb177-32"><a href="#cb177-32" tabindex="-1"></a><span class="fu">collect_metrics</span>(res12)</span></code></pre></div>
+<span id="cb177-32"><a href="#cb177-32" tabindex="-1"></a><span class="fu">collect_metrics</span>(res12) <span class="sc">%&gt;%</span></span>
+<span id="cb177-33"><a href="#cb177-33" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb177-34"><a href="#cb177-34" tabindex="-1"></a>    <span class="at">mean =</span> <span class="fu">sprintf</span>(<span class="st">&quot;%.6f&quot;</span>, mean),</span>
+<span id="cb177-35"><a href="#cb177-35" tabindex="-1"></a>    <span class="at">std_err =</span> <span class="fu">sprintf</span>(<span class="st">&quot;%.6f&quot;</span>, std_err)</span>
+<span id="cb177-36"><a href="#cb177-36" tabindex="-1"></a>  )</span></code></pre></div>
 <pre><code>## # A tibble: 1 × 6
-##   .metric          .estimator  mean     n std_err .config             
-##   &lt;chr&gt;            &lt;chr&gt;      &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt; &lt;chr&gt;               
-## 1 poisson_log_loss standard   0.165     5 0.00118 Preprocessor1_Model1</code></pre>
+##   .metric          .estimator mean         n std_err  .config             
+##   &lt;chr&gt;            &lt;chr&gt;      &lt;chr&gt;    &lt;int&gt; &lt;chr&gt;    &lt;chr&gt;               
+## 1 poisson_log_loss standard   0.164667     5 0.001178 Preprocessor1_Model1</code></pre>
 <div class="sourceCode" id="cb179"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb179-1"><a href="#cb179-1" tabindex="-1"></a>m12_fit <span class="ot">=</span> m12_wflow <span class="sc">%&gt;%</span> </span>
 <span id="cb179-2"><a href="#cb179-2" tabindex="-1"></a>    <span class="fu">fit</span>(training_set)</span>
 <span id="cb179-3"><a href="#cb179-3" tabindex="-1"></a><span class="fu">summary</span>(<span class="fu">extract_fit_engine</span>(m12_fit))</span></code></pre></div>
@@ -2194,6 +2245,8 @@ here on DriverAge.</p>
 ## AIC: 108226
 ## 
 ## Number of Fisher Scoring iterations: 6</code></pre>
+<p>We see that the polynomial approach has better performance compared
+to binning the continuous variables.</p>
 </div>
 <div id="comparison-with-other-models" class="section level2">
 <h2>Comparison with other models</h2>
@@ -2231,6 +2284,7 @@ best model. We will use this as comparison for our future sessions.</p>
 <span id="cb181-30"><a href="#cb181-30" tabindex="-1"></a>    <span class="fu">fit</span>(training_set)</span>
 <span id="cb181-31"><a href="#cb181-31" tabindex="-1"></a></span>
 <span id="cb181-32"><a href="#cb181-32" tabindex="-1"></a>predt <span class="ot">=</span> <span class="fu">predict</span>(m11_fit, testing_set)</span></code></pre></div>
+<p>Residual deviance:</p>
 <div class="sourceCode" id="cb182"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb182-1"><a href="#cb182-1" tabindex="-1"></a><span class="dv">2</span> <span class="sc">*</span> (<span class="fu">sum</span>(<span class="fu">dpois</span>(<span class="at">x =</span> testing_set<span class="sc">$</span>ClaimNb, <span class="at">lambda =</span> testing_set<span class="sc">$</span>ClaimNb,</span>
 <span id="cb182-2"><a href="#cb182-2" tabindex="-1"></a>    <span class="at">log =</span> <span class="cn">TRUE</span>)) <span class="sc">-</span> <span class="fu">sum</span>(<span class="fu">dpois</span>(<span class="at">x =</span> testing_set<span class="sc">$</span>ClaimNb, <span class="at">lambda =</span> <span class="fu">pull</span>(predt, <span class="st">&quot;.pred&quot;</span>), <span class="at">log =</span> <span class="cn">TRUE</span>)))</span></code></pre></div>
 <pre><code>## [1] 20529.66</code></pre>
@@ -2274,7 +2328,6 @@ is constructed later).</p>
 <span id="cb185-14"><a href="#cb185-14" tabindex="-1"></a><span class="fu">scale_x_continuous</span>(<span class="at">name=</span><span class="st">&quot;Car Age&quot;</span>)<span class="sc">+</span></span>
 <span id="cb185-15"><a href="#cb185-15" tabindex="-1"></a><span class="fu">scale_y_continuous</span>(<span class="at">name =</span> <span class="st">&quot;Predicted Claim Frequency&quot;</span>, <span class="at">labels=</span><span class="fu">label_percent</span>(<span class="at">accuracy=</span><span class="fl">0.01</span>))</span></code></pre></div>
 <p><img src="data:image/png;base64,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" /><!-- --></p>
-</div>
 </div>
 <div id="useful-links" class="section level1">
 <h1>Useful links</h1>
