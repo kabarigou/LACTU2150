@@ -62,17 +62,6 @@ plot_data <- data.frame(age = insurance_data$age,
 # Add the fitted claim counts to the data frame
 insurance_data$fitted_claim_counts <- fitted_claim_counts
 
-# Visualization: Scatter plot of observed vs. predicted claim counts
-library(ggplot2)
-ggplot(insurance_data, aes(x = claim_counts, y = fitted_claim_counts)) +
-  geom_point(alpha = 0.6, color = "blue") +
-  geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "red") +
-  labs(
-    title = "Observed vs. Predicted Claim Counts",
-    x = "Observed Claim Counts",
-    y = "Predicted Claim Counts"
-  ) +
-  theme_minimal()
 
 # Create age groups for visualization
 insurance_data <- insurance_data %>%
