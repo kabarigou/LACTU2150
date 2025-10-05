@@ -1,9 +1,9 @@
 # UCLouvain - LACTU2150 - Analyse statistique des données d'assurance
 
 
-This course covers the modeling claim propension, claim counts, claim severities and claim duration with generalized linear models (GLM), generalized additive models (GAM and GAMLSS), mixed models (GLMM) and generalized non-linear models (GNM). 
+This course covers the modeling claim propension, claim counts, claim severities and claim duration with generalized linear models (GLM), generalized additive models (GAM and GAMLSS), mixed models (GLMM) and generalized non-linear models (GNM) among others.
 
-The analysis is conducted using R, leveraging its statistical capabilities to model and predict insurance costs based on various factors. 
+The analysis is conducted using R.
 
 ## (Preliminary) Repository Structure 
 - **1. Introduction/**: Contains materials for the introductory session on R and descriptive analysis.
