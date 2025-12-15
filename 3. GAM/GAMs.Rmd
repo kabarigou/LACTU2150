@@ -6,7 +6,10 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-# Generalized Additive Models
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(fig.width = 8, fig.height = 6)
+```
+
 
 ## Loading the data and the packages
 

@@ -17,7 +17,7 @@ set.seed(123)
 # Simulate policyholder features
 n <- 10000
 age <- rnorm(n, mean = 50, sd = 10)          # Policyholder age
-age <- pmax(pmin(age, 70), 30) #bound between age 18 and 80
+age <- pmax(pmin(age, 70), 30) #bound between age 30 and 70
 
 car_type <- factor(sample(c("sedan", "SUV", "truck"), n, replace = TRUE)) # Car type
 region <- factor(sample(c("urban", "rural"), n, replace = TRUE)) # Region
@@ -35,7 +35,7 @@ insurance_data <- data.frame(age, car_type, region, claim_counts)
 
 # Fit a GAMLSS model with Negative Binomial distribution
 model <- gamlss(
-  claim_counts ~ pb(age) + car_type + region,  # Mean model
+  claim_counts ~ pb(age) + car_type + region,  # Mean model - pb: penalized b-splines
   sigma.formula = ~ -1+region,                   # Dispersion model
   family = NBI(),                              # Negative Binomial family
   data = insurance_data
