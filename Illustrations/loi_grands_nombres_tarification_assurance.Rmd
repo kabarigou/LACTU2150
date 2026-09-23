@@ -1,0 +1,514 @@
+---
+title: "Loi des grands nombres et tarification en assurance"
+author: "Karim Barigou"
+lang: fr
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    number_sections: true
+    theme: readable
+    code_folding: show
+  pdf_document:
+    toc: true
+    number_sections: true
+fontsize: 11pt
+header-includes:
+  - \usepackage{amsmath}
+  - \usepackage{amssymb}
+---
+
+```{r configuration, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  warning = FALSE,
+  message = FALSE,
+  fig.width = 7,
+  fig.height = 4.5,
+  fig.align = "center"
+)
+set.seed(2026)
+```
+
+# Tarification par classification des risques
+
+Par le contrat d'assurance, le risque économique est transféré de l'assuré vers l'assureur. L'assureur mutualise un grand nombre de risques individuels relativement faibles. Si les sinistres individuels sont indépendants et identiquement distribués, la **loi des grands nombres** rend le sinistre moyen de plus en plus prévisible.
+
+Soient
+
+$$
+X_1,\ldots,X_n
+$$
+
+des montants de sinistres individuels indépendants et identiquement distribués, tels que
+
+$$
+\mathbb{E}[X_i]=\mu<\infty,
+\qquad
+\operatorname{Var}(X_i)=\sigma^2<\infty.
+$$
+
+Définissons le montant agrégé des sinistres et la moyenne empirique par
+
+$$
+S_n=\sum_{i=1}^n X_i,
+\qquad
+\overline X_n=\frac{S_n}{n}.
+$$
+
+La loi forte des grands nombres affirme que
+
+$$
+\overline X_n \xrightarrow{\mathrm{p.s.}} \mu,
+$$
+
+où « p.s. » signifie « presque sûrement ».
+
+De manière équivalente,
+
+$$
+\frac{S_n}{n}\xrightarrow{\mathrm{p.s.}}\mu,
+$$
+
+ce qui justifie l'approximation
+
+$$
+S_n\approx n\mathbb{E}[X]=n\mu.
+$$
+
+La loi des grands nombres porte sur le **sinistre moyen par contrat**, et non sur l'écart absolu du sinistre agrégé. En effet,
+
+$$
+\mathbb{E}\left[\frac{S_n}{n}\right]=\mu,
+\qquad
+\operatorname{Var}\left(\frac{S_n}{n}\right)=\frac{\sigma^2}{n},
+$$
+
+et donc
+
+$$
+\operatorname{Écart-type}\left(\frac{S_n}{n}\right)
+=\frac{\sigma}{\sqrt n}.
+$$
+
+L'incertitude sur le sinistre moyen diminue donc à la vitesse $1/\sqrt n$.
+
+# Tarification à l'espérance du sinistre
+
+Supposons que l'assureur facture la prime pure
+
+$$
+p=\mu
+$$
+
+par contrat. L'encaissement total de primes est alors égal à $n\mu$. En négligeant les frais, le coût du capital et les revenus financiers, définissons la perte technique de l'assureur par
+
+$$
+L_n=S_n-n\mu.
+$$
+
+L'assureur enregistre une perte lorsque
+
+$$
+L_n>0
+\quad\Longleftrightarrow\quad
+S_n>n\mu
+\quad\Longleftrightarrow\quad
+\overline X_n>\mu.
+$$
+
+La loi des grands nombres implique que
+
+$$
+\frac{L_n}{n}=\overline X_n-\mu
+\xrightarrow{\mathrm{p.s.}}0.
+$$
+
+Ainsi, la **perte par contrat tend vers zéro**. Cela ne signifie toutefois pas que la probabilité d'enregistrer une perte technique tend vers zéro.
+
+## Pourquoi la probabilité de perte reste proche de 50 %
+
+Sous les hypothèses du théorème central limite,
+
+$$
+\frac{S_n-n\mu}{\sigma\sqrt n}
+\xrightarrow{\mathcal{L}}N(0,1).
+$$
+
+Par conséquent,
+
+$$
+\mathbb{P}(L_n>0)
+=
+\mathbb{P}\left(
+\frac{S_n-n\mu}{\sigma\sqrt n}>0
+\right)
+\longrightarrow
+\mathbb{P}(Z>0)=\frac12,
+$$
+
+où $Z\sim N(0,1)$.
+
+Une tarification exactement égale à l'espérance rend donc faible la **taille relative** d'une perte éventuelle, mais elle ne rend pas la perte improbable. Le montant agrégé des sinistres fluctue autour de son espérance et se situe au-dessus de celle-ci environ une fois sur deux.
+
+> **Précision importante.** La limite de $1/2$ découle du théorème central limite et de conditions de régularité autour de la moyenne. Elle ne découle pas directement de la loi des grands nombres. Pour une distribution discrète ou très irrégulière, les probabilités à taille finie peuvent différer de $1/2$, même si elles en sont souvent proches lorsque le portefeuille est grand.
+
+Par ailleurs,
+
+$$
+\operatorname{Écart-type}(L_n)=\sigma\sqrt n.
+$$
+
+L'amplitude absolue des fluctuations croît donc comme $\sqrt n$, tandis que leur importance relative par rapport aux sinistres agrégés attendus diminue :
+
+$$
+\frac{\operatorname{Écart-type}(L_n)}{n\mu}
+=
+\frac{\sigma}{\mu\sqrt n}
+\longrightarrow 0.
+$$
+
+# Ajout d'un chargement de sécurité positif
+
+Supposons maintenant que l'assureur facture
+
+$$
+p_\varepsilon=\mu+\varepsilon,
+\qquad \varepsilon>0,
+$$
+
+par contrat. L'encaissement total de primes devient
+
+$$
+P_n=n(\mu+\varepsilon).
+$$
+
+La perte technique vaut alors
+
+$$
+L_n^{(\varepsilon)}
+=S_n-n(\mu+\varepsilon).
+$$
+
+L'assureur enregistre une perte si
+
+$$
+L_n^{(\varepsilon)}>0
+\quad\Longleftrightarrow\quad
+\overline X_n>\mu+\varepsilon.
+$$
+
+Puisque $\overline X_n\to\mu$ presque sûrement, pour tout $\varepsilon>0$ fixé,
+
+$$
+\boxed{
+\mathbb{P}\left(L_n^{(\varepsilon)}>0\right)
+=
+\mathbb{P}\left(\overline X_n>\mu+\varepsilon\right)
+\longrightarrow 0.
+}
+$$
+
+Cette conclusion découle directement de la loi des grands nombres.
+
+## Approximation par le théorème central limite
+
+Le théorème central limite fournit l'approximation pratique suivante :
+
+$$
+\begin{aligned}
+\mathbb{P}\left(L_n^{(\varepsilon)}>0\right)
+&=
+\mathbb{P}\left(S_n>n(\mu+\varepsilon)\right)\\
+&=
+\mathbb{P}\left(
+\frac{S_n-n\mu}{\sigma\sqrt n}
+>
+\frac{\sqrt n\,\varepsilon}{\sigma}
+\right)\\
+&\approx
+1-\Phi\left(\frac{\sqrt n\,\varepsilon}{\sigma}\right),
+\end{aligned}
+$$
+
+où $\Phi$ désigne la fonction de répartition de la loi normale standard. Comme
+
+$$
+\frac{\sqrt n\,\varepsilon}{\sigma}\longrightarrow\infty,
+$$
+
+la probabilité approchée tend vers zéro.
+
+
+# Illustration numérique 1 : sinistres individuels normaux
+
+Pour une première illustration transparente, supposons que
+
+$$
+X_i\sim N(\mu,\sigma^2),
+$$
+
+avec $\mu=100$ et $\sigma=50$. Bien que la loi normale puisse attribuer une très faible probabilité à des sinistres négatifs, elle permet des calculs agrégés exacts et particulièrement lisibles.
+
+Nous utilisons un chargement $\varepsilon=5$, soit 5 % du sinistre attendu.
+
+```{r parametres-normaux}
+mu <- 100
+sigma <- 50
+epsilon <- 5
+valeurs_n <- c(1, 10, 25, 100, 400, 1000, 2500, 10000)
+```
+
+Puisque
+
+$$
+S_n\sim N(n\mu,n\sigma^2),
+$$
+
+nous obtenons exactement
+
+$$
+\mathbb{P}(S_n>n\mu)=0{,}5
+$$
+
+et
+
+$$
+\mathbb{P}(S_n>n(\mu+\varepsilon))
+=1-\Phi\left(\frac{\sqrt n\varepsilon}{\sigma}\right).
+$$
+
+```{r tableau-normal}
+resultats_normaux <- data.frame(
+  n = valeurs_n,
+  ecart_type_moyenne = sigma / sqrt(valeurs_n),
+  ecart_type_agrege = sigma * sqrt(valeurs_n),
+  ecart_type_relatif = sigma / (mu * sqrt(valeurs_n)),
+  proba_perte_prime_pure = 0.5,
+  proba_perte_prime_chargee = pnorm(
+    sqrt(valeurs_n) * epsilon / sigma,
+    lower.tail = FALSE
+  )
+)
+
+resultats_normaux$ecart_type_moyenne <-
+  round(resultats_normaux$ecart_type_moyenne, 3)
+resultats_normaux$ecart_type_agrege <-
+  round(resultats_normaux$ecart_type_agrege, 3)
+resultats_normaux$ecart_type_relatif <-
+  round(resultats_normaux$ecart_type_relatif, 4)
+resultats_normaux$proba_perte_prime_pure <-
+  round(resultats_normaux$proba_perte_prime_pure, 4)
+resultats_normaux$proba_perte_prime_chargee <-
+  signif(resultats_normaux$proba_perte_prime_chargee, 4)
+
+knitr::kable(
+  resultats_normaux,
+  col.names = c(
+    "$n$", "Écart-type de la moyenne", "Écart-type agrégé",
+    "Écart-type relatif", "Probabilité de perte : $p=\\mu$",
+    "Probabilité de perte : $p=\\mu+\\varepsilon$"
+  ),
+  caption = paste(
+    "Diversification et probabilité d'une perte technique"
+  )
+)
+```
+
+L'écart-type de la moyenne diminue avec $n$, mais la probabilité de perte sous une tarification à l'espérance reste égale à 50 %. En revanche, un chargement positif fixé réduit rapidement la probabilité de perte.
+
+```{r graphique-probabilites-normales}
+grille_n <- 1:10000
+proba_pure <- rep(0.5, length(grille_n))
+proba_chargee <- pnorm(
+  sqrt(grille_n) * epsilon / sigma,
+  lower.tail = FALSE
+)
+
+plot(
+  grille_n, proba_pure,
+  type = "l", lwd = 2, lty = 2, col = "firebrick",
+  ylim = c(0, 0.52),
+  xlab = "Taille du portefeuille n",
+  ylab = "Probabilité d'une perte technique",
+  main = "Prime pure et prime avec chargement"
+)
+lines(grille_n, proba_chargee, lwd = 2, col = "navy")
+legend(
+  "topright",
+  legend = c(
+    "Prime pure : p = mu",
+    "Prime chargée : p = mu + epsilon"
+  ),
+  col = c("firebrick", "navy"),
+  lty = c(2, 1), lwd = 2, bty = "n"
+)
+grid()
+```
+
+# Illustration numérique 2 : sinistres gamma positifs
+
+Considérons maintenant une distribution positive et asymétrique à droite. Supposons que
+
+$$
+X_i\sim\operatorname{Gamma}(\alpha,\theta),
+$$
+
+où $\alpha$ est le paramètre de forme et $\theta$ le paramètre d'échelle. Alors,
+
+$$
+\mu=\alpha\theta,
+\qquad
+\sigma^2=\alpha\theta^2.
+$$
+
+Prenons $\alpha=4$ et $\theta=25$, de sorte que
+
+$$
+\mu=100,
+\qquad
+\sigma=50.
+$$
+
+Le montant agrégé des sinistres suit exactement la loi
+
+$$
+S_n\sim\operatorname{Gamma}(n\alpha,\theta).
+$$
+
+```{r calculs-gamma}
+forme <- 4
+echelle <- 25
+mu_gamma <- forme * echelle
+sigma_gamma <- sqrt(forme) * echelle
+epsilon_gamma <- 5
+
+proba_gamma_pure <- pgamma(
+  valeurs_n * mu_gamma,
+  shape = valeurs_n * forme,
+  scale = echelle,
+  lower.tail = FALSE
+)
+
+proba_gamma_chargee <- pgamma(
+  valeurs_n * (mu_gamma + epsilon_gamma),
+  shape = valeurs_n * forme,
+  scale = echelle,
+  lower.tail = FALSE
+)
+
+resultats_gamma <- data.frame(
+  n = valeurs_n,
+  proba_perte_prime_pure = proba_gamma_pure,
+  proba_perte_prime_chargee = proba_gamma_chargee,
+  approximation_tcl_chargee = pnorm(
+    sqrt(valeurs_n) * epsilon_gamma / sigma_gamma,
+    lower.tail = FALSE
+  )
+)
+
+resultats_gamma$proba_perte_prime_pure <-
+  round(resultats_gamma$proba_perte_prime_pure, 4)
+resultats_gamma$proba_perte_prime_chargee <-
+  signif(resultats_gamma$proba_perte_prime_chargee, 4)
+resultats_gamma$approximation_tcl_chargee <-
+  signif(resultats_gamma$approximation_tcl_chargee, 4)
+
+knitr::kable(
+  resultats_gamma,
+  col.names = c(
+    "$n$", "Exacte : $p=\\mu$",
+    "Exacte : $p=\\mu+\\varepsilon$",
+    "Approximation TCL avec chargement"
+  ),
+  caption = paste(
+    "Probabilités exactes sous une loi gamma et approximation TCL"
+  )
+)
+```
+
+Pour une distribution asymétrique à droite, la probabilité à taille finie de dépasser la moyenne n'est pas nécessairement égale à 50 %. Néanmoins, lorsque la taille du portefeuille augmente, le montant agrégé centré et standardisé devient approximativement normal. La probabilité de perte sous la prime pure converge alors vers 50 %, tandis qu'avec un chargement fixé, elle tend vers zéro.
+
+```{r graphique-probabilites-gamma}
+n_gamma <- 1:2500
+proba_gamma_pure_grille <- pgamma(
+  n_gamma * mu_gamma,
+  shape = n_gamma * forme,
+  scale = echelle,
+  lower.tail = FALSE
+)
+proba_gamma_chargee_grille <- pgamma(
+  n_gamma * (mu_gamma + epsilon_gamma),
+  shape = n_gamma * forme,
+  scale = echelle,
+  lower.tail = FALSE
+)
+
+plot(
+  n_gamma, proba_gamma_pure_grille,
+  type = "l", lwd = 2, col = "firebrick",
+  ylim = c(0, 0.52),
+  xlab = "Taille du portefeuille n",
+  ylab = "Probabilité d'une perte technique",
+  main = "Sinistres gamma : probabilités exactes"
+)
+lines(
+  n_gamma, proba_gamma_chargee_grille,
+  lwd = 2, col = "navy"
+)
+abline(h = 0.5, lty = 3, col = "gray40")
+legend(
+  "right",
+  legend = c("Prime pure", "Prime chargée", "Limite 0,5"),
+  col = c("firebrick", "navy", "gray40"),
+  lty = c(1, 1, 3), lwd = 2, bty = "n"
+)
+grid()
+```
+
+
+# Synthèse
+
+Les principales conclusions sont les suivantes.
+
+1. **Diversification**
+
+   $$
+   \overline X_n\xrightarrow{\mathrm{p.s.}}\mu,
+   \qquad
+   \operatorname{Écart-type}(\overline X_n)
+   =\frac{\sigma}{\sqrt n}.
+   $$
+
+2. **Tarification à l'espérance**
+
+   $$
+   p=\mu
+   \quad\Longrightarrow\quad
+   \frac{L_n}{n}\to0,
+   $$
+
+   mais, sous les hypothèses du théorème central limite,
+
+   $$
+   \mathbb{P}(L_n>0)\to\frac12.
+   $$
+
+3. **Tarification avec un chargement positif fixé**
+
+   $$
+   p=\mu+\varepsilon,
+   \qquad \varepsilon>0,
+   $$
+
+   implique
+
+   $$
+   \mathbb{P}(L_n^{(\varepsilon)}>0)\to0.
+   $$
+
+4. **Interprétation économique**
+
+   La marge de prime $n\varepsilon$ croît linéairement avec la taille du portefeuille, alors que les fluctuations aléatoires agrégées ne croissent qu'à la vitesse $\sqrt n$.
+
+> La loi des grands nombres justifie l'utilisation de l'espérance du sinistre comme point de référence central pour la tarification. Le chargement positif transforme l'augmentation de la prévisibilité en une diminution de la probabilité de perte technique.

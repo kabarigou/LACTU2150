@@ -1,0 +1,774 @@
+---
+title: "Convergence conditionnelle et modèles de régression en assurance"
+author: "Karim Barigou"
+lang: fr
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    number_sections: true
+    theme: readable
+    code_folding: show
+  pdf_document:
+    toc: true
+    number_sections: true
+fontsize: 11pt
+header-includes:
+  - \usepackage{amsmath}
+  - \usepackage{amssymb}
+  - \usepackage{booktabs}
+---
+
+```{r configuration, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  warning = FALSE,
+  message = FALSE,
+  fig.width = 7,
+  fig.height = 4.7,
+  fig.align = "center"
+)
+set.seed(2026)
+```
+
+# Motivation
+
+Soit $S_i$ le montant total des sinistres associé au contrat $i$. Pour un portefeuille de $n$ contrats, définissons le montant agrégé
+
+$$
+T_n=\sum_{j=1}^n S_j.
+$$
+
+Le portefeuille observé fournit une information globale, $T_n$, sur la sinistralité totale. Une question naturelle est alors la suivante : dans quelle mesure la connaissance du total $T_n$ modifie-t-elle la meilleure prédiction du sinistre individuel $S_i$ ?
+
+Le transparent initial propose l'idée suivante :
+
+$$
+\mathbb E[S_i\mid T_n]\longrightarrow \mu_i,
+\qquad
+\mu_i=\mathbb E[S_i],
+$$
+
+lorsque la taille du portefeuille augmente.
+
+L'intuition est que, si le contrat $i$ représente une part négligeable d'un portefeuille de plus en plus grand, le total agrégé devient de moins en moins informatif sur ce contrat particulier. La meilleure prédiction de $S_i$ fondée uniquement sur $T_n$ revient alors vers sa moyenne individuelle $\mu_i$.
+
+# Une formulation mathématique plus précise
+
+## Le contrat considéré doit rester fixé
+
+Dans tout le document, $i$ désigne un contrat fixé, tandis que $n$ augmente. Il faut donc lire
+
+$$
+S_i \quad \text{fixé},
+\qquad
+T_n=S_i+\sum_{j\ne i}S_j,
+\qquad
+n\to\infty.
+$$
+
+L'information contenue dans $T_n$ sur $S_i$ se dilue lorsque la variabilité produite par les autres contrats devient dominante.
+
+## Le mode de convergence doit être indiqué
+
+Une formulation utile est la convergence dans $L^2$ :
+
+$$
+\boxed{
+\mathbb E[S_i\mid T_n]-\mu_i
+\xrightarrow{L^2}0.
+}
+$$
+
+Elle signifie que
+
+$$
+\mathbb E\left[
+\left(
+\mathbb E[S_i\mid T_n]-\mu_i
+\right)^2
+\right]
+\longrightarrow 0.
+$$
+
+Comme
+
+$$
+\mathbb E\left[\mathbb E[S_i\mid T_n]\right]
+=\mathbb E[S_i]=\mu_i,
+$$
+
+cette quantité est aussi égale à
+
+$$
+\operatorname{Var}\left(\mathbb E[S_i\mid T_n]\right).
+$$
+
+Ainsi, la convergence dans $L^2$ équivaut ici à
+
+$$
+\operatorname{Var}\left(\mathbb E[S_i\mid T_n]\right)
+\longrightarrow 0.
+$$
+
+Elle implique également la convergence en probabilité :
+
+$$
+\mathbb E[S_i\mid T_n]
+\xrightarrow{\mathbb P}\mu_i.
+$$
+
+## L'indépendance seule ne suffit pas
+
+L'hypothèse selon laquelle $S_1,S_2,\ldots$ sont indépendantes, mais pas nécessairement identiquement distribuées, ne suffit pas à elle seule. Il faut aussi éviter qu'un petit nombre de contrats domine indéfiniment le portefeuille.
+
+Des conditions suffisantes typiques demandent que :
+
+- $S_i$ soit intégrable, et souvent de carré intégrable ;
+- le contrat $i$ soit fixé lorsque $n$ augmente ;
+- la variance du reste du portefeuille augmente ;
+- aucun contrat ne domine la variance totale ;
+- une condition de type Lindeberg ou une régularité analogue permette une approximation asymptotique du total.
+
+Une condition de négligeabilité souvent rencontrée est
+
+$$
+\frac{\max_{1\leq j\leq n}\operatorname{Var}(S_j)}
+{\sum_{j=1}^n\operatorname{Var}(S_j)}
+\longrightarrow 0.
+$$
+
+Elle exprime qu'aucun contrat ne représente une part non négligeable de la variance totale.
+
+> **Message important.** Contrairement à la loi des grands nombres classique, la convergence d'une espérance conditionnelle n'est pas une conséquence immédiate de l'indépendance. Elle doit être justifiée par une structure probabiliste ou par des conditions supplémentaires.
+
+# Intuition : dilution de l'information individuelle
+
+Écrivons
+
+$$
+T_n=S_i+R_{i,n},
+\qquad
+R_{i,n}=\sum_{\substack{j=1\\j\ne i}}^nS_j.
+$$
+
+Par indépendance, $S_i$ et $R_{i,n}$ sont indépendants. Le total $T_n$ contient bien $S_i$, mais il contient également le bruit produit par tous les autres contrats.
+
+Si
+
+$$
+\operatorname{Var}(R_{i,n})\longrightarrow\infty
+$$
+
+alors que $\operatorname{Var}(S_i)$ reste fixe, la contribution relative du contrat $i$ devient négligeable :
+
+$$
+\frac{\operatorname{Var}(S_i)}
+{\operatorname{Var}(T_n)}
+=
+\frac{\operatorname{Var}(S_i)}
+{\operatorname{Var}(S_i)+\operatorname{Var}(R_{i,n})}
+\longrightarrow0.
+$$
+
+Le total renseigne alors surtout sur le reste du portefeuille, et de moins en moins sur $S_i$.
+
+# Exemple exact 1 : risques normaux hétérogènes
+
+Supposons que les risques soient indépendants et que
+
+$$
+S_j\sim N(\mu_j,\sigma_j^2),
+\qquad j=1,\ldots,n.
+$$
+
+Le couple $(S_i,T_n)$ est gaussien. La formule de régression normale donne exactement
+
+$$
+\mathbb E[S_i\mid T_n]
+=
+\mu_i+
+\frac{\operatorname{Cov}(S_i,T_n)}
+{\operatorname{Var}(T_n)}
+\left(T_n-\mathbb E[T_n]\right).
+$$
+
+Grâce à l'indépendance,
+
+$$
+\operatorname{Cov}(S_i,T_n)=\sigma_i^2,
+\qquad
+\operatorname{Var}(T_n)=V_n:=\sum_{j=1}^n\sigma_j^2.
+$$
+
+Par conséquent,
+
+$$
+\boxed{
+\mathbb E[S_i\mid T_n]
+=
+\mu_i+
+\frac{\sigma_i^2}{V_n}
+\left(T_n-\sum_{j=1}^n\mu_j\right).
+}
+$$
+
+Cette espérance conditionnelle est aléatoire, car elle dépend de $T_n$. Son écart quadratique moyen à $\mu_i$ est
+
+$$
+\begin{aligned}
+\mathbb E\left[
+\left(
+\mathbb E[S_i\mid T_n]-\mu_i
+\right)^2
+\right]
+&=
+\left(\frac{\sigma_i^2}{V_n}\right)^2
+\operatorname{Var}(T_n)\\
+&=
+\frac{\sigma_i^4}{V_n}.
+\end{aligned}
+$$
+
+Ainsi, si $V_n\to\infty$,
+
+$$
+\mathbb E[S_i\mid T_n]-\mu_i
+\xrightarrow{L^2}0.
+$$
+
+Dans le cas identiquement distribué, avec $\sigma_j^2=\sigma^2$,
+
+$$
+V_n=n\sigma^2
+$$
+
+et donc
+
+$$
+\mathbb E\left[
+\left(
+\mathbb E[S_i\mid T_n]-\mu_i
+\right)^2
+\right]
+=
+\frac{\sigma^2}{n}.
+$$
+
+Le taux quadratique est donc d'ordre $1/n$, et l'écart-type de l'espérance conditionnelle est d'ordre $1/\sqrt n$.
+
+# Illustration numérique 1 : modèle normal hétérogène
+
+Nous considérons un contrat fixé $i=1$ avec
+
+$$
+\mu_1=120,
+\qquad
+\sigma_1=60.
+$$
+
+Les autres contrats ont des moyennes et variances différentes. Nous utilisons ici une suite déterministe de paramètres afin d'illustrer un portefeuille indépendant, mais non identiquement distribué.
+
+```{r parametres-normaux}
+n_max <- 5000
+indice <- 1:n_max
+
+mu_j <- 100 + 20 * sin(indice / 25)
+sigma_j <- 35 + 15 * (1 + cos(indice / 17)) / 2
+
+mu_j[1] <- 120
+sigma_j[1] <- 60
+
+n_valeurs <- c(2, 5, 10, 25, 50, 100, 250, 500, 1000, 2500, 5000)
+variance_totale <- cumsum(sigma_j^2)
+
+mse_theorique_normal <- sigma_j[1]^4 / variance_totale[n_valeurs]
+sd_conditionnelle_normal <- sqrt(mse_theorique_normal)
+poids_total_normal <- sigma_j[1]^2 / variance_totale[n_valeurs]
+
+resultats_normaux <- data.frame(
+  n = n_valeurs,
+  poids_du_total = poids_total_normal,
+  ecart_type_conditionnel = sd_conditionnelle_normal,
+  EQM_theorique = mse_theorique_normal
+)
+
+resultats_normaux$poids_du_total <-
+  signif(resultats_normaux$poids_du_total, 4)
+resultats_normaux$ecart_type_conditionnel <-
+  signif(resultats_normaux$ecart_type_conditionnel, 4)
+resultats_normaux$EQM_theorique <-
+  signif(resultats_normaux$EQM_theorique, 4)
+
+knitr::kable(
+  resultats_normaux,
+  col.names = c(
+    "$n$",
+    "$\\sigma_1^2/V_n$",
+    "Écart-type de $\\mathbb E[S_1\\mid T_n]$",
+    "EQM théorique autour de $\\mu_1$"
+  ),
+  caption = "Dilution de l'information agrégée dans le modèle normal"
+)
+```
+
+Le coefficient $\sigma_1^2/V_n$ mesure la sensibilité de la prédiction de $S_1$ à une variation du total $T_n$. Il tend vers zéro lorsque la variance totale du portefeuille augmente.
+
+## Vérification par simulation
+
+Pour chaque taille $n$, simulons directement le total normal
+
+$$
+T_n\sim N\left(\sum_{j=1}^n\mu_j,V_n\right)
+$$
+
+puis calculons $\mathbb E[S_1\mid T_n]$ à partir de la formule exacte.
+
+```{r simulation-normale}
+B <- 20000
+n_sim <- c(2, 10, 50, 250, 1000, 5000)
+
+simulation_normale <- lapply(n_sim, function(n) {
+  moyenne_totale <- sum(mu_j[1:n])
+  variance_n <- sum(sigma_j[1:n]^2)
+  total <- rnorm(B, moyenne_totale, sqrt(variance_n))
+  prediction <- mu_j[1] +
+    sigma_j[1]^2 / variance_n * (total - moyenne_totale)
+
+  data.frame(
+    n = n,
+    prediction = prediction,
+    ecart = prediction - mu_j[1]
+  )
+})
+
+simulation_normale <- do.call(rbind, simulation_normale)
+
+resume_normal <- do.call(
+  rbind,
+  lapply(n_sim, function(n) {
+    ecarts_n <- simulation_normale$ecart[simulation_normale$n == n]
+
+    data.frame(
+      n = n,
+      moyenne = mean(ecarts_n),
+      ecart_type = sd(ecarts_n),
+      EQM = mean(ecarts_n^2),
+      quantile_025 = unname(quantile(ecarts_n, 0.025)),
+      quantile_975 = unname(quantile(ecarts_n, 0.975))
+    )
+  })
+)
+
+rownames(resume_normal) <- NULL
+
+knitr::kable(
+  resume_normal,
+  digits = 4,
+  col.names = c(
+    "$n$", "Biais simulé", "Écart-type simulé", "EQM simulée",
+    "Quantile 2,5 %", "Quantile 97,5 %"
+  ),
+  caption = "Simulation de la convergence conditionnelle dans le modèle normal"
+)
+```
+
+```{r graphique-convergence-normale}
+couleurs <- hcl.colors(length(n_sim), "Blues 3")
+
+densites <- lapply(n_sim, function(n) {
+  density(
+    simulation_normale$prediction[simulation_normale$n == n]
+  )
+})
+
+limite_x <- range(unlist(lapply(densites, function(d) d$x)))
+limite_y <- c(0, max(unlist(lapply(densites, function(d) d$y))))
+
+plot(
+  densites[[1]],
+  xlim = limite_x,
+  ylim = limite_y,
+  lwd = 2,
+  col = couleurs[1],
+  xlab = expression(E[S[1] * " | " * T[n]]),
+  ylab = "Densité",
+  main = "Concentration de l'espérance conditionnelle autour de mu[1]"
+)
+
+for (k in 2:length(densites)) {
+  lines(densites[[k]], lwd = 2, col = couleurs[k])
+}
+
+abline(v = mu_j[1], lwd = 2, lty = 2, col = "firebrick")
+legend(
+  "topleft",
+  legend = paste("n =", n_sim),
+  col = couleurs,
+  lwd = 2,
+  bty = "n",
+  cex = 0.8
+)
+grid()
+```
+
+Lorsque $n$ augmente, la distribution de $\mathbb E[S_1\mid T_n]$ se concentre autour de $\mu_1=120$.
+
+# Exemple exact 2 : risques de Poisson hétérogènes
+
+Supposons maintenant que
+
+$$
+S_j\sim\operatorname{Poisson}(\lambda_j)
+$$
+
+indépendamment, avec des paramètres éventuellement différents. Posons
+
+$$
+\Lambda_n=\sum_{j=1}^n\lambda_j.
+$$
+
+Alors
+
+$$
+T_n=\sum_{j=1}^nS_j
+\sim\operatorname{Poisson}(\Lambda_n).
+$$
+
+Conditionnellement à $T_n=t$, le vecteur $(S_1,\ldots,S_n)$ suit une loi multinomiale :
+
+$$
+(S_1,\ldots,S_n)\mid T_n=t
+\sim
+\operatorname{Multinomial}\left(
+ t;
+ \frac{\lambda_1}{\Lambda_n},\ldots,
+ \frac{\lambda_n}{\Lambda_n}
+\right).
+$$
+
+Par conséquent,
+
+$$
+\boxed{
+\mathbb E[S_i\mid T_n]
+=
+\frac{\lambda_i}{\Lambda_n}T_n.
+}
+$$
+
+Comme $\mu_i=\mathbb E[S_i]=\lambda_i$,
+
+$$
+\mathbb E[S_i\mid T_n]-\lambda_i
+=
+\frac{\lambda_i}{\Lambda_n}(T_n-\Lambda_n).
+$$
+
+L'erreur quadratique moyenne vaut exactement
+
+$$
+\begin{aligned}
+\mathbb E\left[
+\left(
+\mathbb E[S_i\mid T_n]-\lambda_i
+\right)^2
+\right]
+&=
+\frac{\lambda_i^2}{\Lambda_n^2}
+\operatorname{Var}(T_n)\\
+&=
+\frac{\lambda_i^2}{\Lambda_n}.
+\end{aligned}
+$$
+
+Dès que $\Lambda_n\to\infty$,
+
+$$
+\mathbb E[S_i\mid T_n]-\lambda_i
+\xrightarrow{L^2}0.
+$$
+
+Cet exemple est particulièrement utile, car il montre une convergence exacte pour des risques discrets, positifs et non identiquement distribués.
+
+# Illustration numérique 2 : modèle de Poisson hétérogène
+
+Considérons un contrat fixé avec $\lambda_1=2$, tandis que les autres paramètres varient selon les caractéristiques des assurés.
+
+```{r parametres-poisson}
+lambda_j <- exp(
+  log(1.5) +
+    0.35 * sin(indice / 20) +
+    0.15 * cos(indice / 7)
+)
+lambda_j[1] <- 2
+
+lambda_totale <- cumsum(lambda_j)
+mse_theorique_poisson <- lambda_j[1]^2 / lambda_totale[n_valeurs]
+sd_conditionnelle_poisson <- sqrt(mse_theorique_poisson)
+poids_total_poisson <- lambda_j[1] / lambda_totale[n_valeurs]
+
+resultats_poisson <- data.frame(
+  n = n_valeurs,
+  poids_du_total = poids_total_poisson,
+  ecart_type_conditionnel = sd_conditionnelle_poisson,
+  EQM_theorique = mse_theorique_poisson
+)
+
+resultats_poisson$poids_du_total <-
+  signif(resultats_poisson$poids_du_total, 4)
+resultats_poisson$ecart_type_conditionnel <-
+  signif(resultats_poisson$ecart_type_conditionnel, 4)
+resultats_poisson$EQM_theorique <-
+  signif(resultats_poisson$EQM_theorique, 4)
+
+knitr::kable(
+  resultats_poisson,
+  col.names = c(
+    "$n$", "$\\lambda_1/\\Lambda_n$",
+    "Écart-type de $\\mathbb E[S_1\\mid T_n]$",
+    "EQM théorique autour de $\\lambda_1$"
+  ),
+  caption = "Convergence conditionnelle dans le modèle de Poisson"
+)
+```
+
+## Simulation des probabilités d'écart
+
+La convergence en probabilité peut être illustrée en estimant
+
+$$
+\mathbb P\left(
+\left|\mathbb E[S_1\mid T_n]-\lambda_1\right|>\delta
+\right)
+$$
+
+pour plusieurs valeurs de $n$ et un seuil $\delta>0$.
+
+```{r simulation-poisson}
+B_poisson <- 50000
+n_sim_poisson <- c(2, 10, 50, 250, 1000, 5000)
+delta <- 0.25
+
+resume_poisson <- do.call(
+  rbind,
+  lapply(n_sim_poisson, function(n) {
+    lambda_n <- sum(lambda_j[1:n])
+    total <- rpois(B_poisson, lambda_n)
+    prediction <- lambda_j[1] / lambda_n * total
+    ecart <- prediction - lambda_j[1]
+
+    data.frame(
+      n = n,
+      moyenne_prediction = mean(prediction),
+      ecart_type_prediction = sd(prediction),
+      EQM_simulee = mean(ecart^2),
+      EQM_theorique = lambda_j[1]^2 / lambda_n,
+      probabilite_ecart = mean(abs(ecart) > delta)
+    )
+  })
+)
+
+knitr::kable(
+  resume_poisson,
+  digits = 5,
+  col.names = c(
+    "$n$", "Moyenne de la prédiction", "Écart-type",
+    "EQM simulée", "EQM théorique",
+    paste0("$\\mathbb P(|\\cdot|>", delta, ")$")
+  ),
+  caption = "Simulation de la convergence dans le modèle de Poisson"
+)
+```
+
+```{r graphique-probabilite-poisson}
+plot(
+  resume_poisson$n,
+  resume_poisson$probabilite_ecart,
+  type = "b",
+  pch = 19,
+  lwd = 2,
+  log = "x",
+  col = "navy",
+  xlab = "Taille du portefeuille n, échelle logarithmique",
+  ylab = paste0("P(|prédiction - lambda[1]| > ", delta, ")"),
+  main = "Disparition de l'information individuelle contenue dans le total"
+)
+grid()
+```
+
+# Quand la convergence peut-elle échouer ?
+
+Il est instructif d'examiner un cas où le reste du portefeuille ne devient pas suffisamment variable. Supposons, pour $j\geq2$, que
+
+$$
+S_j\sim N(0,2^{-j})
+$$
+
+indépendamment, tandis que $S_1\sim N(\mu_1,\sigma_1^2)$. Alors
+
+$$
+\sum_{j=2}^\infty\operatorname{Var}(S_j)
+=
+\sum_{j=2}^\infty2^{-j}
+<\infty.
+$$
+
+La variance totale $V_n$ reste bornée. Dans le cas normal,
+
+$$
+\mathbb E\left[
+\left(
+\mathbb E[S_1\mid T_n]-\mu_1
+\right)^2
+\right]
+=
+\frac{\sigma_1^4}{V_n}
+$$
+
+ne tend alors pas vers zéro. Ajouter une infinité de contrats dont la variance totale reste finie ne suffit pas à diluer l'information relative à $S_1$.
+
+```{r contre-exemple}
+n_echec <- 2:100
+sigma1_carre <- 1
+variance_reste <- sapply(
+  n_echec,
+  function(n) sum(2^(-(2:n)))
+)
+variance_totale_echec <- sigma1_carre + variance_reste
+mse_echec <- sigma1_carre^2 / variance_totale_echec
+
+plot(
+  n_echec,
+  mse_echec,
+  type = "l",
+  lwd = 2,
+  col = "firebrick",
+  xlab = "Taille du portefeuille n",
+  ylab = "EQM conditionnelle",
+  main = "Échec de la convergence si la variance totale reste bornée"
+)
+abline(
+  h = sigma1_carre^2 / (sigma1_carre + 0.5),
+  lty = 2,
+  col = "gray40"
+)
+grid()
+```
+
+# Lien avec la prime pure et les modèles de régression
+
+## Deux niveaux de conditionnement à distinguer
+
+Le conditionnement par le total du portefeuille,
+
+$$
+\mathbb E[S_i\mid T_n],
+$$
+
+est un outil théorique permettant d'étudier la quantité d'information individuelle contenue dans l'expérience agrégée.
+
+En tarification, l'information pertinente est plutôt le vecteur de caractéristiques observables du contrat,
+
+$$
+\boldsymbol X_i
+=
+(X_{i1},\ldots,X_{ip}),
+$$
+
+qui peut contenir, par exemple, l'âge, le type de véhicule, la région, la couverture ou l'exposition.
+
+La prime pure conditionnelle est alors
+
+$$
+\boxed{
+\pi(\boldsymbol X_i)
+=
+\mathbb E[S_i\mid\boldsymbol X_i].
+}
+$$
+
+Si les caractéristiques sont considérées comme fixées, on peut écrire
+
+$$
+\mu_i
+=
+\mathbb E[S_i\mid\boldsymbol X_i]
+=
+\pi(\boldsymbol X_i).
+$$
+
+Un modèle de régression estime cette fonction inconnue à partir des données :
+
+$$
+\mu_i
+=
+\pi(\boldsymbol X_i)
+\approx
+\widehat\pi(\boldsymbol X_i).
+$$
+
+> Dans un portefeuille hétérogène, la cible actuarielle utile n'est généralement pas la moyenne marginale commune $\mathbb E[S]$, mais l'espérance conditionnelle propre au profil de risque : $\mathbb E[S_i\mid\boldsymbol X_i]$.
+
+## Décomposition fréquence-coût
+
+Pour un montant total de sinistres, on peut écrire
+
+$$
+S_i=\sum_{k=1}^{N_i}Y_{ik},
+$$
+
+où $N_i$ est le nombre de sinistres et $Y_{ik}$ leur coût. Sous une hypothèse conditionnelle appropriée,
+
+$$
+\mathbb E[S_i\mid\boldsymbol X_i]
+=
+\mathbb E[N_i\mid\boldsymbol X_i]
+\times
+\mathbb E[Y_{ik}\mid\boldsymbol X_i].
+$$
+
+Cela motive l'estimation séparée :
+
+- d'un modèle de fréquence, souvent Poisson ou binomial négatif ;
+- d'un modèle de coût, souvent gamma ou lognormal ;
+- ou d'un modèle direct du coût total, par exemple un modèle de Tweedie.
+
+
+# Synthèse
+
+Les principaux enseignements sont les suivants.
+
+1. La convergence
+   $$
+   \mathbb E[S_i\mid T_n]\to\mathbb E[S_i]
+   $$
+   exprime une **dilution de l'information individuelle** contenue dans le total d'un grand portefeuille.
+
+2. L'indépendance seule ne suffit pas. Il faut notamment que le reste du portefeuille devienne suffisamment variable et qu'aucun contrat ne domine le total.
+
+3. Dans les modèles normal et Poisson, la convergence peut être démontrée exactement :
+   $$
+   \operatorname{EQM}_{\mathrm{normal}}
+   =\frac{\sigma_i^4}{\sum_{j=1}^n\sigma_j^2},
+   $$
+   et
+   $$
+   \operatorname{EQM}_{\mathrm{Poisson}}
+   =\frac{\lambda_i^2}{\sum_{j=1}^n\lambda_j}.
+   $$
+
+4. La prime pure en tarification est une espérance conditionnelle fondée sur les caractéristiques du risque :
+   $$
+   \pi(\boldsymbol X_i)
+   =\mathbb E[S_i\mid\boldsymbol X_i].
+   $$
+
+5. Le rôle du modèle de régression est d'estimer cette fonction à partir des données :
+   $$
+   \widehat\pi(\boldsymbol X_i)
+   \approx
+   \mathbb E[S_i\mid\boldsymbol X_i].
+   $$
+
+> Le total du portefeuille perd progressivement son pouvoir informatif sur un contrat fixé, tandis que les caractéristiques individuelles restent précisément l'information que le modèle de tarification cherche à exploiter.
