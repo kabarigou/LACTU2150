@@ -24,7 +24,7 @@ lambdas <- seq(0.05, 0.3, length.out = 500)
 loglik_values <- sapply(lambdas, loglik)
 
 #Observed Fisher information
-obs_info <- -hessian(loglik, lambda_hat)
+obs_info <- as.numeric(-hessian(loglik, lambda_hat))
 
 #Curve approximation of the loglikelihood using Fisher information
 curve_approx <- function(l) {
@@ -46,28 +46,37 @@ df_mle <- data.frame(
 )
 
 ggplot(df, aes(x = lambda)) +
-  geom_line(aes(y = loglik), linewidth = 1.2, color = "black") +
-  geom_line(aes(y = quad), linetype = "dashed", color = "blue", linewidth = 1) +
-  geom_vline(xintercept = lambda_hat, color = "red", linetype = "dotted", linewidth = 1) +
-  geom_point(data = df_mle, aes(x = lambda, y = loglik), color = "red", size = 3) +
+  geom_line(aes(y = loglik, color = "Exact log-likelihood"), linewidth = 1.2) +
+  geom_line(aes(y = quad, color = "Quadratic approximation"), 
+            linetype = "dashed", linewidth = 1) +
+  geom_vline(xintercept = lambda_hat, color = "red", 
+             linetype = "dotted", linewidth = 1) +
+  geom_point(data = df_mle, aes(x = lambda, y = loglik), 
+             color = "red", size = 3) +
   annotate("text", x = lambda_hat, y = loglik(lambda_hat), 
-           label = "hat(lambda)", color = "red", hjust = -0.1, vjust = -0.5, size = 5, parse = TRUE) +
+           label = "hat(lambda)", color = "red", 
+           hjust = -0.1, vjust = -0.5, size = 5, parse = TRUE) +
   labs(
     title = "Log-likelihood of Poisson Claim Frequency",
     x = expression(lambda),
-    y = "Log-likelihood"
+    y = "Log-likelihood",
+    color = "Curve"
+  ) +
+  scale_color_manual(
+    values = c(
+      "Exact log-likelihood" = "black",
+      "Quadratic approximation" = "blue"
+    )
   ) +
   theme_minimal(base_size = 15) +
-  annotate("text", x = lambda_hat+0.02, y = loglik(lambda_hat)-20,
+  annotate("text", x = lambda_hat + 0.02, 
+           y = loglik(lambda_hat) - 20,
            label = paste0("Observed Fisher info: ", round(obs_info, 2)),
            color = "blue", hjust = 0)
 
-cat("Estimated lambda (MLE):", lambda_hat, "\n")
-cat("Observed Fisher information:", obs_info, "\n")
 
 #How does the likelihood change when we vary exposures ? 
 
-library(ggplot2)
 
 # Original data
 claims <- c(0, 1, 2, 3, 4)
