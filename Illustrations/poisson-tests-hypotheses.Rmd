@@ -1,0 +1,884 @@
+---
+title: "Fréquence des sinistres Poisson : information de Fisher, tests du rapport de vraisemblance et intervalles de confiance"
+author: "Cours sur les distributions ED en assurance"
+date: "`r format(Sys.Date(), '%d %B %Y')`"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    theme: cosmo
+    code_folding: hide
+  beamer_presentation: default
+---
+
+```{r configuration, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  warning = FALSE,
+  message = FALSE,
+  fig.width = 9,
+  fig.height = 5.5
+)
+
+library(ggplot2)
+library(scales)
+```
+
+# Objectif
+
+On modélise le nombre de sinistres d'une police \(i\) par :
+
+\[
+Y_i \sim \operatorname{Poisson}(d_i\lambda),
+\]
+
+où :
+
+- \(Y_i\) désigne le nombre de sinistres observés pour la police \(i\) ;
+- \(d_i\) désigne l'exposition de la police \(i\), en années ;
+- \(\lambda\) désigne la fréquence annuelle des sinistres.
+
+Pour ces données, l'estimateur du maximum de vraisemblance est :
+
+\[
+\widehat{\lambda}
+=
+\frac{\sum_i Y_i}{\sum_i d_i}.
+\]
+
+Ce document illustre :
+
+1. la log-vraisemblance et son approximation quadratique ;
+2. l'information de Fisher observée ;
+3. le test du rapport de vraisemblance ;
+4. le test de Wald ;
+5. les intervalles de confiance associés ;
+6. l'effet d'une hausse de l'exposition sur la précision des estimations.
+
+# Données
+
+```{r donnees}
+claims <- c(0, 1, 2, 3, 4)
+
+policy_counts <- c(
+  12962,
+  1369,
+  157,
+  14,
+  3
+)
+
+exposures <- c(
+  10545.94,
+  1187.13,
+  134.66,
+  11.08,
+  2.52
+)
+
+claim_data <- data.frame(
+  nombre_sinistres = claims,
+  nombre_polices = policy_counts,
+  exposition = exposures
+)
+
+knitr::kable(
+  claim_data,
+  col.names = c(
+    "Nombre de sinistres",
+    "Nombre de polices",
+    "Exposition totale"
+  )
+)
+```
+
+```{r statistiques-resume}
+total_claims <- sum(claims * policy_counts)
+total_exposure <- sum(exposures)
+
+lambda_hat <- total_claims / total_exposure
+
+cat("Nombre total de sinistres :", total_claims, "\n")
+cat("Exposition totale :", round(total_exposure, 2), "années-polices\n")
+cat("Estimateur du maximum de vraisemblance de lambda :", 
+    round(lambda_hat, 5), "\n")
+```
+
+# Log-vraisemblance Poisson
+
+Les données sont agrégées par nombre de sinistres. Dans chaque groupe \(j\), l'exposition moyenne par police est :
+
+\[
+d_j = \frac{D_j}{n_j},
+\]
+
+où \(D_j\) est l'exposition totale du groupe et \(n_j\) est le nombre de polices.
+
+La log-vraisemblance est alors :
+
+\[
+\ell(\lambda)
+=
+\sum_j \left[
+-\lambda D_j
++
+n_j y_j\log(\lambda)
++
+n_j y_j\log(d_j)
+-
+n_j\log(y_j!)
+\right].
+\]
+
+```{r fonctions-vraisemblance}
+loglik <- function(lambda, exposures, claims, policy_counts) {
+  
+  if (any(lambda <= 0)) {
+    return(-Inf)
+  }
+  
+  exposition_moyenne <- exposures / policy_counts
+  
+  sum(
+    -lambda * exposures +
+      policy_counts * claims * log(lambda) +
+      policy_counts * claims * log(exposition_moyenne) -
+      policy_counts * lfactorial(claims)
+  )
+}
+
+loglik_hat <- loglik(
+  lambda = lambda_hat,
+  exposures = exposures,
+  claims = claims,
+  policy_counts = policy_counts
+)
+
+loglik_hat
+```
+
+# Information de Fisher et approximation quadratique
+
+Pour ce modèle Poisson,
+
+\[
+\ell'(\lambda)
+=
+-\sum_i d_i
++
+\frac{\sum_i Y_i}{\lambda},
+\]
+
+et
+
+\[
+\ell''(\lambda)
+=
+-\frac{\sum_i Y_i}{\lambda^2}.
+\]
+
+Au maximum de vraisemblance, on a :
+
+\[
+\sum_iY_i
+=
+\widehat{\lambda}\sum_i d_i.
+\]
+
+Par conséquent, l'information de Fisher observée est :
+
+\[
+-\ell''(\widehat{\lambda})
+=
+\frac{\sum_i d_i}{\widehat{\lambda}}.
+\]
+
+L'information de Fisher espérée est :
+
+\[
+\mathcal{I}(\lambda)
+=
+\frac{\sum_i d_i}{\lambda}.
+\]
+
+À l'EMV, l'information observée et l'information espérée coïncident dans ce modèle.
+
+```{r information-fisher}
+information_observee <- total_exposure / lambda_hat
+information_esperee_emv <- total_exposure / lambda_hat
+
+variance_lambda_hat <- 1 / information_observee
+erreur_standard_lambda_hat <- sqrt(variance_lambda_hat)
+
+cat("Information de Fisher observée :",
+    round(information_observee, 2), "\n")
+
+cat("Variance estimée de lambda_hat :",
+    signif(variance_lambda_hat, 5), "\n")
+
+cat("Erreur standard estimée de lambda_hat :",
+    round(erreur_standard_lambda_hat, 5), "\n")
+```
+
+L'approximation asymptotique est :
+
+\[
+\widehat{\lambda}
+\overset{a}{\sim}
+\mathcal{N}
+\left(
+\lambda,
+\frac{\lambda}{\sum_i d_i}
+\right).
+\]
+
+```{r graphique-vraisemblance}
+lambdas <- seq(
+  from = max(0.001, lambda_hat - 5 * erreur_standard_lambda_hat),
+  to = lambda_hat + 5 * erreur_standard_lambda_hat,
+  length.out = 1000
+)
+
+approximation_quadratique <- function(lambda) {
+  loglik_hat -
+    0.5 * information_observee * (lambda - lambda_hat)^2
+}
+
+plot_data <- data.frame(
+  lambda = lambdas,
+  log_vraisemblance = sapply(
+    lambdas,
+    loglik,
+    exposures = exposures,
+    claims = claims,
+    policy_counts = policy_counts
+  ),
+  approximation_quadratique = approximation_quadratique(lambdas)
+)
+
+ggplot(plot_data, aes(x = lambda)) +
+  geom_line(
+    aes(y = log_vraisemblance, colour = "Log-vraisemblance exacte"),
+    linewidth = 1.1
+  ) +
+  geom_line(
+    aes(
+      y = approximation_quadratique,
+      colour = "Approximation quadratique"
+    ),
+    linewidth = 1,
+    linetype = "dashed"
+  ) +
+  geom_vline(
+    xintercept = lambda_hat,
+    colour = "red",
+    linetype = "dotted",
+    linewidth = 1
+  ) +
+  geom_point(
+    data = data.frame(
+      lambda = lambda_hat,
+      log_vraisemblance = loglik_hat
+    ),
+    aes(x = lambda, y = log_vraisemblance),
+    inherit.aes = FALSE,
+    colour = "red",
+    size = 3
+  ) +
+  annotate(
+    "text",
+    x = lambda_hat,
+    y = loglik_hat,
+    label = expression(hat(lambda)),
+    colour = "red",
+    hjust = -0.2,
+    vjust = -0.8,
+    parse = TRUE,
+    size = 5
+  ) +
+  scale_colour_manual(
+    values = c(
+      "Log-vraisemblance exacte" = "black",
+      "Approximation quadratique" = "blue"
+    )
+  ) +
+  labs(
+    title = "Log-vraisemblance de la fréquence des sinistres",
+    subtitle = paste(
+      "Information de Fisher observée =",
+      round(information_observee, 1)
+    ),
+    x = expression(lambda),
+    y = expression(ell(lambda)),
+    colour = NULL
+  ) +
+  theme_minimal(base_size = 14)
+```
+
+# Test du rapport de vraisemblance
+
+Considérons le test :
+
+\[
+H_0:\lambda=\lambda_0
+\qquad \text{contre} \qquad
+H_a:\lambda\neq\lambda_0.
+\]
+
+La statistique du rapport de vraisemblance est :
+
+\[
+-2\log\Lambda
+=
+2\left[
+\ell(\widehat{\lambda})-\ell(\lambda_0)
+\right].
+\]
+
+Sous \(H_0\), lorsque l'échantillon est suffisamment grand :
+
+\[
+-2\log\Lambda
+\overset{a}{\sim}
+\chi^2_1.
+\]
+
+Au seuil \(\alpha\), on rejette \(H_0\) lorsque :
+
+\[
+-2\log\Lambda
+>
+\chi^2_{1,1-\alpha}.
+\]
+
+## Exemple : test d'une fréquence tarifaire
+
+Supposons que l'on souhaite tester l'hypothèse selon laquelle la fréquence annuelle vaut \(0.15\) :
+
+\[
+H_0:\lambda=0.15.
+\]
+
+```{r test-rv}
+lambda_0 <- 0.15
+alpha <- 0.05
+
+loglik_nulle <- loglik(
+  lambda = lambda_0,
+  exposures = exposures,
+  claims = claims,
+  policy_counts = policy_counts
+)
+
+statistique_rv <- 2 * (loglik_hat - loglik_nulle)
+valeur_critique_rv <- qchisq(1 - alpha, df = 1)
+p_value_rv <- pchisq(
+  statistique_rv,
+  df = 1,
+  lower.tail = FALSE
+)
+
+resultats_rv <- data.frame(
+  quantite = c(
+    "Valeur sous H0 : lambda_0",
+    "EMV : lambda_hat",
+    "Statistique du rapport de vraisemblance",
+    "Valeur critique à 5 %",
+    "p-valeur"
+  ),
+  valeur = c(
+    lambda_0,
+    lambda_hat,
+    statistique_rv,
+    valeur_critique_rv,
+    p_value_rv
+  )
+)
+
+knitr::kable(resultats_rv, digits = 5)
+```
+
+```{r decision-rv}
+if (p_value_rv < alpha) {
+  cat(
+    "Décision : rejet de H0 au seuil de",
+    alpha * 100,
+    "%.\n"
+  )
+} else {
+  cat(
+    "Décision : H0 n'est pas rejetée au seuil de",
+    alpha * 100,
+    "%.\n"
+  )
+}
+```
+
+## Représentation graphique du test du rapport de vraisemblance
+
+La droite horizontale représente le niveau de log-vraisemblance à partir duquel une valeur de \(\lambda\) n'est plus rejetée :
+
+\[
+\ell(\lambda)
+=
+\ell(\widehat{\lambda})
+-
+\frac{1}{2}\chi^2_{1,0.95}.
+\]
+
+Les valeurs de \(\lambda\) situées sous cette droite sont rejetées par le test du rapport de vraisemblance au seuil de 5 %.
+
+```{r graphique-test-rv}
+seuil_loglik_rv <- loglik_hat - 0.5 * valeur_critique_rv
+
+plot_data$accepte_par_rv <-
+  plot_data$log_vraisemblance >= seuil_loglik_rv
+
+ggplot(plot_data, aes(x = lambda, y = log_vraisemblance)) +
+  geom_line(linewidth = 1.1, colour = "black") +
+  geom_ribbon(
+    aes(
+      ymin = seuil_loglik_rv,
+      ymax = log_vraisemblance,
+      fill = accepte_par_rv
+    ),
+    alpha = 0.35
+  ) +
+  geom_hline(
+    yintercept = seuil_loglik_rv,
+    linetype = "dashed",
+    colour = "blue",
+    linewidth = 1
+  ) +
+  geom_vline(
+    xintercept = lambda_hat,
+    linetype = "dotted",
+    colour = "red",
+    linewidth = 1
+  ) +
+  geom_vline(
+    xintercept = lambda_0,
+    linetype = "longdash",
+    colour = "darkgreen",
+    linewidth = 1
+  ) +
+  annotate(
+    "text",
+    x = lambda_hat,
+    y = max(plot_data$log_vraisemblance),
+    label = expression(hat(lambda)),
+    colour = "red",
+    hjust = -0.1,
+    vjust = -0.8,
+    parse = TRUE,
+    size = 5
+  ) +
+  annotate(
+    "text",
+    x = lambda_0,
+    y = max(plot_data$log_vraisemblance),
+    label = expression(lambda[0]),
+    colour = "darkgreen",
+    hjust = -0.1,
+    vjust = 1.5,
+    parse = TRUE,
+    size = 5
+  ) +
+  scale_fill_manual(
+    values = c(
+      "TRUE" = "skyblue",
+      "FALSE" = "mistyrose"
+    ),
+    labels = c(
+      "TRUE" = "Hypothèse non rejetée",
+      "FALSE" = "Hypothèse rejetée"
+    )
+  ) +
+  labs(
+    title = "Test du rapport de vraisemblance pour la fréquence Poisson",
+    subtitle = "La droite bleue délimite l'ensemble des valeurs non rejetées à 5 %.",
+    x = expression(lambda),
+    y = expression(ell(lambda)),
+    fill = "Résultat du test"
+  ) +
+  theme_minimal(base_size = 14)
+```
+
+# Test de Wald
+
+La statistique de Wald pour tester \(H_0:\lambda=\lambda_0\) est :
+
+\[
+Z
+=
+\frac{\widehat{\lambda}-\lambda_0}
+{\widehat{\operatorname{se}}(\widehat{\lambda})}.
+\]
+
+Sous \(H_0\),
+
+\[
+Z
+\overset{a}{\sim}
+\mathcal{N}(0,1),
+\]
+
+ou, de façon équivalente :
+
+\[
+Z^2
+\overset{a}{\sim}
+\chi^2_1.
+\]
+
+```{r test-wald}
+statistique_wald_z <-
+  (lambda_hat - lambda_0) / erreur_standard_lambda_hat
+
+statistique_wald_chi2 <- statistique_wald_z^2
+
+p_value_wald <- 2 * pnorm(
+  abs(statistique_wald_z),
+  lower.tail = FALSE
+)
+
+resultats_wald <- data.frame(
+  quantite = c(
+    "Statistique Z de Wald",
+    "Statistique chi-deux de Wald",
+    "p-valeur bilatérale"
+  ),
+  valeur = c(
+    statistique_wald_z,
+    statistique_wald_chi2,
+    p_value_wald
+  )
+)
+
+knitr::kable(resultats_wald, digits = 5)
+```
+
+Pour un grand portefeuille, les tests du rapport de vraisemblance et de Wald donnent généralement des conclusions proches.
+
+Le test du rapport de vraisemblance est toutefois souvent préférable lorsque la vraisemblance est asymétrique ou lorsque le paramètre est proche d'une frontière de l'espace paramétrique.
+
+# Intervalles de confiance par inversion de tests
+
+Un ensemble de confiance de niveau \(100(1-\alpha)\%\) contient toutes les valeurs de paramètre pour lesquelles l'hypothèse nulle n'est pas rejetée par un test de niveau \(\alpha\).
+
+L'intervalle de confiance fondé sur le rapport de vraisemblance est :
+
+\[
+\left\{
+\lambda:
+2\left[
+\ell(\widehat{\lambda})-\ell(\lambda)
+\right]
+\leq
+\chi^2_{1,1-\alpha}
+\right\}.
+\]
+
+```{r ic-rv}
+difference_rv <- function(lambda) {
+  2 * (
+    loglik_hat -
+      loglik(
+        lambda = lambda,
+        exposures = exposures,
+        claims = claims,
+        policy_counts = policy_counts
+      )
+  ) - valeur_critique_rv
+}
+
+ic_rv_inferieur <- uniroot(
+  difference_rv,
+  interval = c(1e-10, lambda_hat)
+)$root
+
+ic_rv_superieur <- uniroot(
+  difference_rv,
+  interval = c(lambda_hat, max(1, 5 * lambda_hat))
+)$root
+
+ic_rv <- c(
+  borne_inferieure = ic_rv_inferieur,
+  borne_superieure = ic_rv_superieur
+)
+
+ic_rv
+```
+
+L'intervalle de confiance de Wald est :
+
+\[
+\widehat{\lambda}
+\pm
+z_{1-\alpha/2}
+\widehat{\operatorname{se}}(\widehat{\lambda}).
+\]
+
+```{r ic-wald}
+valeur_critique_normale <- qnorm(1 - alpha / 2)
+
+ic_wald <- lambda_hat +
+  c(-1, 1) * valeur_critique_normale * erreur_standard_lambda_hat
+
+resultats_ic <- data.frame(
+  methode = c(
+    "Intervalle du rapport de vraisemblance",
+    "Intervalle de Wald"
+  ),
+  borne_inferieure = c(ic_rv[1], ic_wald[1]),
+  borne_superieure = c(ic_rv[2], ic_wald[2])
+)
+
+knitr::kable(resultats_ic, digits = 5)
+```
+
+```{r graphique-ic}
+ic_plot_data <- data.frame(
+  methode = c("Rapport de vraisemblance", "Wald"),
+  borne_inferieure = c(ic_rv[1], ic_wald[1]),
+  borne_superieure = c(ic_rv[2], ic_wald[2]),
+  estimation = lambda_hat
+)
+
+ggplot(ic_plot_data, aes(y = methode)) +
+  geom_errorbarh(
+    aes(
+      xmin = borne_inferieure,
+      xmax = borne_superieure
+    ),
+    height = 0.2,
+    linewidth = 1.1,
+    colour = "steelblue"
+  ) +
+  geom_point(
+    aes(x = estimation),
+    size = 3,
+    colour = "red"
+  ) +
+  geom_vline(
+    xintercept = lambda_hat,
+    linetype = "dotted",
+    colour = "red"
+  ) +
+  labs(
+    title = "Intervalles de confiance à 95 % pour la fréquence annuelle",
+    x = expression(lambda),
+    y = NULL
+  ) +
+  theme_minimal(base_size = 14)
+```
+
+# Effet de l'exposition sur l'information de Fisher
+
+Afin d'illustrer l'effet du volume de données, on multiplie simultanément :
+
+- les nombres de polices ;
+- les expositions totales.
+
+Cette transformation conserve la fréquence empirique \(\widehat{\lambda}\), mais modifie la quantité d'information disponible.
+
+Dans ce modèle :
+
+\[
+\mathcal{I}(\widehat{\lambda})
+=
+\frac{\sum_i d_i}{\widehat{\lambda}}.
+\]
+
+L'information de Fisher augmente donc linéairement avec l'exposition totale, tandis que l'erreur standard diminue suivant :
+
+\[
+\widehat{\operatorname{se}}(\widehat{\lambda})
+\propto
+\frac{1}{\sqrt{\sum_i d_i}}.
+\]
+
+```{r scenarios-exposition}
+scenarios <- data.frame(
+  scenario = c(
+    "Un quart du portefeuille",
+    "Portefeuille observé",
+    "Dix fois le portefeuille"
+  ),
+  multiplicateur = c(0.25, 1, 10)
+)
+
+resultats_scenarios <- do.call(
+  rbind,
+  lapply(seq_len(nrow(scenarios)), function(i) {
+    
+    multiplicateur <- scenarios$multiplicateur[i]
+    
+    expositions_ajustees <- exposures * multiplicateur
+    polices_ajustees <- policy_counts * multiplicateur
+    
+    exposition_totale_ajustee <- sum(expositions_ajustees)
+    sinistres_totaux_ajustes <- sum(claims * polices_ajustees)
+    
+    lambda_hat_ajuste <-
+      sinistres_totaux_ajustes / exposition_totale_ajustee
+    
+    information_ajustee <-
+      exposition_totale_ajustee / lambda_hat_ajuste
+    
+    erreur_standard_ajustee <- sqrt(1 / information_ajustee)
+    
+    data.frame(
+      scenario = scenarios$scenario[i],
+      multiplicateur = multiplicateur,
+      exposition_totale = exposition_totale_ajustee,
+      lambda_hat = lambda_hat_ajuste,
+      information_fisher = information_ajustee,
+      erreur_standard = erreur_standard_ajustee,
+      ic_inferieur =
+        lambda_hat_ajuste -
+        valeur_critique_normale * erreur_standard_ajustee,
+      ic_superieur =
+        lambda_hat_ajuste +
+        valeur_critique_normale * erreur_standard_ajustee
+    )
+  })
+)
+
+knitr::kable(resultats_scenarios, digits = 5)
+```
+
+```{r graphique-information-exposition}
+ggplot(
+  resultats_scenarios,
+  aes(x = exposition_totale, y = information_fisher)
+) +
+  geom_point(size = 3, colour = "darkblue") +
+  geom_line(linewidth = 1, colour = "darkblue") +
+  scale_x_continuous(labels = comma) +
+  scale_y_continuous(labels = comma) +
+  labs(
+    title = "L'information de Fisher augmente avec l'exposition totale",
+    x = "Exposition totale (années-polices)",
+    y = "Information de Fisher observée"
+  ) +
+  theme_minimal(base_size = 14)
+```
+
+```{r graphique-ic-exposition}
+ggplot(resultats_scenarios, aes(y = scenario)) +
+  geom_errorbarh(
+    aes(xmin = ic_inferieur, xmax = ic_superieur),
+    height = 0.2,
+    linewidth = 1.1,
+    colour = "steelblue"
+  ) +
+  geom_point(
+    aes(x = lambda_hat),
+    size = 3,
+    colour = "red"
+  ) +
+  labs(
+    title = "Davantage d'exposition produit des intervalles plus étroits",
+    x = expression(lambda),
+    y = NULL
+  ) +
+  theme_minimal(base_size = 14)
+```
+
+```{r graphique-vraisemblance-exposition}
+lambdas <- seq(0.08, 0.22, length.out = 1000)
+
+scenarios_vraisemblance <- do.call(
+  rbind,
+  lapply(seq_len(nrow(scenarios)), function(i) {
+    
+    multiplicateur <- scenarios$multiplicateur[i]
+    
+    expositions_ajustees <- exposures * multiplicateur
+    polices_ajustees <- policy_counts * multiplicateur
+    
+    lambda_hat_ajuste <-
+      sum(claims * polices_ajustees) / sum(expositions_ajustees)
+    
+    loglik_values <- sapply(
+      lambdas,
+      loglik,
+      exposures = expositions_ajustees,
+      claims = claims,
+      policy_counts = polices_ajustees
+    )
+    
+    loglik_emv <- loglik(
+      lambda = lambda_hat_ajuste,
+      exposures = expositions_ajustees,
+      claims = claims,
+      policy_counts = polices_ajustees
+    )
+    
+    data.frame(
+      lambda = lambdas,
+      log_vraisemblance_relative = loglik_values - loglik_emv,
+      scenario = scenarios$scenario[i]
+    )
+  })
+)
+
+ggplot(
+  scenarios_vraisemblance,
+  aes(
+    x = lambda,
+    y = log_vraisemblance_relative,
+    colour = scenario
+  )
+) +
+  geom_line(linewidth = 1.1) +
+  geom_hline(
+    yintercept = -0.5 * valeur_critique_rv,
+    linetype = "dashed"
+  ) +
+  geom_vline(
+    xintercept = lambda_hat,
+    colour = "red",
+    linetype = "dotted",
+    linewidth = 1
+  ) +
+  labs(
+    title = "Davantage d'exposition concentre la vraisemblance",
+    subtitle = "La droite horizontale délimite l'intervalle de confiance RV à 95 %.",
+    x = expression(lambda),
+    y = expression(
+      ell(lambda) - ell(hat(lambda))
+    ),
+    colour = NULL
+  ) +
+  theme_minimal(base_size = 14)
+```
+
+# Messages principaux
+
+1. La courbure de la log-vraisemblance au niveau de l'EMV est l'information de Fisher observée :
+
+   \[
+   \mathcal{J}(\widehat{\lambda})
+   =
+   -\ell''(\widehat{\lambda}).
+   \]
+
+2. Une exposition totale plus importante augmente l'information de Fisher et réduit l'erreur standard de \(\widehat{\lambda}\).
+
+3. Le test du rapport de vraisemblance compare la vraisemblance de l'EMV avec celle obtenue sous une valeur imposée par l'hypothèse nulle :
+
+   \[
+   -2\log\Lambda
+   =
+   2\left[
+   \ell(\widehat{\lambda})-\ell(\lambda_0)
+   \right].
+   \]
+
+4. Un intervalle de confiance peut être construit en conservant toutes les valeurs de paramètre qui ne sont pas rejetées par un test d'hypothèse.
+
+5. Dans ce modèle Poisson à un paramètre et pour un grand portefeuille, les intervalles de Wald et du rapport de vraisemblance sont proches.
+
+6. Dans des modèles plus complexes, notamment lorsque la vraisemblance est asymétrique, les intervalles fondés sur le profil de vraisemblance sont souvent plus fiables que les intervalles de Wald.
