@@ -17,9 +17,12 @@ The analysis is conducted using R.
 
 - **data/**: Contains the datasets used for analysis.
   - `mtpl_fr.rda` : dataset for the practical sessions.
+  - `mtpl_be.rda` : dataset for the project. 
 
   
 - **Illustrations/**: Contains the illustrations shown during the lectures.
+
+- **Project/**: Contains the instructions of the project. 
 
 
 ## Installation
