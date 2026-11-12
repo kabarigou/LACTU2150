@@ -701,7 +701,10 @@ leaflet(area) %>%
       bringToFront = TRUE
     )
   ) %>%
-  addTiles()
+  addTiles(
+  urlTemplate = "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+  attribution = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+)
 ```
 
 We are now going to include our data into the map
@@ -727,7 +730,10 @@ leaflet(area_w_data) %>%
       "Exposure: ", round(totalExposure, 1)
     )
   ) %>%
-  addTiles() %>%
+  addTiles(
+  urlTemplate = "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+  attribution = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+) %>%
   leaflet::addLegend(
     position = "bottomright",
     pal = colors,
@@ -757,7 +763,10 @@ leaflet(area_w_data) %>%
       "Exposure: ", percent(Obs.Claim.Freq, accuracy=0.01)
     )
   ) %>%
-  addTiles() %>%
+  addTiles(
+  urlTemplate = "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+  attribution = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+) %>%
   leaflet::addLegend(
     position = "bottomright",
     pal = colors,
